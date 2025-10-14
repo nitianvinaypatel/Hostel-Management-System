@@ -5,5 +5,5 @@ export const deanService = {
     approveRequisition: (id: string) => apiClient(`/dean/requisitions/${id}/approve`, { method: 'POST' }),
     getReports: () => apiClient('/dean/reports'),
     getAnnouncements: () => apiClient('/dean/announcements'),
-    createAnnouncement: (data: any) => apiClient('/dean/announcements', { method: 'POST', body: JSON.stringify(data) }),
+    createAnnouncement: (data: Record<string, unknown>) => apiClient('/dean/announcements', { method: 'POST', body: JSON.stringify(data) }),
 }

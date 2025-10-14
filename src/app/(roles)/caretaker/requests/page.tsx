@@ -174,7 +174,7 @@ export default function Requests() {
                             </div>
                             <div className="p-3 rounded-lg bg-white/5">
                                 <p className="text-xs text-muted-foreground mb-1">Reason</p>
-                                <p className="text-sm">Medical reasons - need ground floor accommodation due to mobility issues. Doctor's certificate attached.</p>
+                                <p className="text-sm">Medical reasons - need ground floor accommodation due to mobility issues. Doctor&apos;s certificate attached.</p>
                             </div>
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                 <span>Submitted: 1 day ago</span>

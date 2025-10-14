@@ -72,8 +72,8 @@ export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.Co
     const pathname = usePathname()
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.student
 
-    const getIcon = (iconName: string) => {
-        const Icon = (LucideIcons as any)[iconName]
+    const getIcon = (iconName: string): React.ComponentType => {
+        const Icon = LucideIcons[iconName as keyof typeof LucideIcons] as React.ComponentType | undefined
         return Icon || LucideIcons.Circle
     }
 

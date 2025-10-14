@@ -8,7 +8,7 @@ export default function CaretakerDashboard() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Caretaker Dashboard</h1>
-                    <p className="text-muted-foreground mt-1">Welcome back! Here's your hostel overview</p>
+                    <p className="text-muted-foreground mt-1">Welcome back! Here&apos;s your hostel overview</p>
                 </div>
                 <Button>Generate Report</Button>
             </div>

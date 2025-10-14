@@ -14,10 +14,16 @@ import {
 } from "@/components/ui/breadcrumb"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-type MenuItem = {
+type SubMenuItem = {
     title: string
     url: string
+}
+
+type MenuItem = {
+    title: string
+    url?: string
     icon: string
+    items?: SubMenuItem[]
 }
 
 type DashboardLayoutProps = {
@@ -31,8 +37,19 @@ export function DashboardLayout({ children, menuItems, role }: DashboardLayoutPr
 
     // Get current page title from menu items based on pathname
     const getCurrentPageTitle = () => {
+        // Check top-level items
         const currentItem = menuItems.find((item) => item.url === pathname)
-        return currentItem?.title || "Overview"
+        if (currentItem) return currentItem.title
+
+        // Check nested items
+        for (const item of menuItems) {
+            if (item.items) {
+                const subItem = item.items.find((sub) => sub.url === pathname)
+                if (subItem) return subItem.title
+            }
+        }
+
+        return "Overview"
     }
 
     // Get role display name
