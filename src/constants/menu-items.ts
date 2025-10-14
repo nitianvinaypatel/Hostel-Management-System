@@ -33,9 +33,14 @@ export const studentMenuItems = [
         icon: "LayoutDashboard",
     },
     {
-        title: "Requests",
-        url: "/student/requests",
-        icon: "ClipboardList",
+        title: "Apply for Hostel",
+        url: "/student/apply-for-hostel",
+        icon: "Home",
+    },
+    {
+        title: "Room Allotment",
+        url: "/student/room-allotment",
+        icon: "DoorOpen",
     },
     {
         title: "Complaints",
@@ -43,9 +48,19 @@ export const studentMenuItems = [
         icon: "MessageSquare",
     },
     {
+        title: "Requests",
+        url: "/student/requests",
+        icon: "ClipboardList",
+    },
+    {
         title: "Mess Menu",
         url: "/student/mess-menu",
         icon: "Utensils",
+    },
+    {
+        title: "Hostel Notices",
+        url: "/student/notices",
+        icon: "Bell",
     },
     {
         title: "Payments",
@@ -107,9 +122,45 @@ export const caretakerMenuItems = [
         icon: "LayoutDashboard",
     },
     {
+        title: "Room Management",
+        icon: "DoorOpen",
+        items: [
+            {
+                title: "Add Room",
+                url: "/caretaker/room-management/add",
+            },
+            {
+                title: "Modify Room",
+                url: "/caretaker/room-management/modify",
+            },
+            {
+                title: "Remove Room",
+                url: "/caretaker/room-management/remove",
+            },
+            {
+                title: "View Rooms",
+                url: "/caretaker/room-management/view",
+            },
+            {
+                title: "Room Capacity",
+                url: "/caretaker/room-management/capacity",
+            },
+        ],
+    },
+    {
+        title: "Room Allotment",
+        url: "/caretaker/room-allotment",
+        icon: "UserPlus",
+    },
+    {
         title: "Complaints",
         url: "/caretaker/complaints",
         icon: "MessageSquare",
+    },
+    {
+        title: "Requests",
+        url: "/caretaker/requests",
+        icon: "FileEdit",
     },
     {
         title: "Mess Management",

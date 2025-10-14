@@ -1,5 +1,3 @@
-import { GalleryVerticalEnd } from "lucide-react"
-
 import { LoginForm } from "@/components/login-form"
 
 export default function LoginPage() {
@@ -17,14 +15,14 @@ export default function LoginPage() {
             </div>
 
             {/* Logo */}
-            <div className="absolute top-6 left-6 z-20">
+            {/* <div className="absolute top-6 left-6 z-20">
                 <a href="#" className="flex items-center gap-2 font-medium text-white">
                     <div className="bg-white text-black flex size-8 items-center justify-center rounded-md">
                         <GalleryVerticalEnd className="size-5" />
                     </div>
                     <span className="text-lg font-semibold">Hostel Management System</span>
                 </a>
-            </div>
+            </div> */}
 
             {/* Login Form Container */}
             <div className="relative z-10 w-full max-w-md mx-4">

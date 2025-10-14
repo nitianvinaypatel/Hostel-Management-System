@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import * as LucideIcons from "lucide-react"
+import { ChevronDown } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
 import {
@@ -16,13 +17,27 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
     SidebarRail,
 } from "@/components/ui/sidebar"
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+
+type SubMenuItem = {
+    title: string
+    url: string
+}
 
 type MenuItem = {
     title: string
-    url: string
+    url?: string
     icon: string
+    items?: SubMenuItem[]
 }
 
 type AppSidebarProps = {
@@ -87,11 +102,48 @@ export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.Co
                     <SidebarMenu>
                         {items.map((item) => {
                             const Icon = getIcon(item.icon)
+
+                            // Handle items with sub-menu
+                            if (item.items && item.items.length > 0) {
+                                const isAnySubItemActive = item.items.some(subItem => pathname === subItem.url)
+
+                                return (
+                                    <Collapsible key={item.title} asChild defaultOpen={isAnySubItemActive} className="group/collapsible">
+                                        <SidebarMenuItem>
+                                            <CollapsibleTrigger asChild>
+                                                <SidebarMenuButton tooltip={item.title}>
+                                                    <Icon />
+                                                    <span>{item.title}</span>
+                                                    <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                                                </SidebarMenuButton>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>
+                                                <SidebarMenuSub>
+                                                    {item.items.map((subItem) => {
+                                                        const isActive = pathname === subItem.url
+                                                        return (
+                                                            <SidebarMenuSubItem key={subItem.title}>
+                                                                <SidebarMenuSubButton asChild isActive={isActive}>
+                                                                    <Link href={subItem.url}>
+                                                                        <span>{subItem.title}</span>
+                                                                    </Link>
+                                                                </SidebarMenuSubButton>
+                                                            </SidebarMenuSubItem>
+                                                        )
+                                                    })}
+                                                </SidebarMenuSub>
+                                            </CollapsibleContent>
+                                        </SidebarMenuItem>
+                                    </Collapsible>
+                                )
+                            }
+
+                            // Handle regular menu items
                             const isActive = pathname === item.url
                             return (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                                        <Link href={item.url}>
+                                        <Link href={item.url!}>
                                             <Icon />
                                             <span>{item.title}</span>
                                         </Link>

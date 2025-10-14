@@ -174,12 +174,12 @@ export function LoginForm({
       </div>
 
       {/* Demo Credentials */}
-      <div className="text-xs text-white/70 bg-white/5 backdrop-blur-sm p-3 rounded-md border border-white/10">
+      {/* <div className="text-xs text-white/70 bg-white/5 backdrop-blur-sm p-3 rounded-md border border-white/10">
         <p className="font-semibold mb-1 text-white">Demo Credentials:</p>
         <p>Admin: admin@hostel.com / admin123</p>
         <p>Student: student@hostel.com / student123</p>
         <p>Warden: warden@hostel.com / warden123</p>
-      </div>
+      </div> */}
     </form>
   )
 }
