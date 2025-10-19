@@ -5,14 +5,40 @@ export const adminMenuItems = [
         icon: "LayoutDashboard",
     },
     {
-        title: "Users",
-        url: "/admin/users",
+        title: "User Management",
         icon: "Users",
+        items: [
+            {
+                title: "All Users",
+                url: "/admin/users",
+            },
+            {
+                title: "Add User",
+                url: "/admin/users/add",
+            },
+            {
+                title: "Roles & Permissions",
+                url: "/admin/users/roles",
+            },
+        ],
     },
     {
-        title: "Hostels",
-        url: "/admin/hostels",
+        title: "Hostel Management",
         icon: "Building2",
+        items: [
+            {
+                title: "All Hostels",
+                url: "/admin/hostels",
+            },
+            {
+                title: "Rooms & Blocks",
+                url: "/admin/hostels/rooms",
+            },
+            {
+                title: "Fee Structure",
+                url: "/admin/hostels/fees",
+            },
+        ],
     },
     {
         title: "Requisitions",
@@ -21,8 +47,53 @@ export const adminMenuItems = [
     },
     {
         title: "Reports",
-        url: "/admin/reports",
         icon: "FileText",
+        items: [
+            {
+                title: "All Reports",
+                url: "/admin/reports",
+            },
+            {
+                title: "Occupancy Report",
+                url: "/admin/reports/occupancy",
+            },
+            {
+                title: "Fee Collection",
+                url: "/admin/reports/fees",
+            },
+            {
+                title: "Complaints Summary",
+                url: "/admin/reports/complaints",
+            },
+            {
+                title: "Maintenance Costs",
+                url: "/admin/reports/maintenance",
+            },
+        ],
+    },
+    {
+        title: "Notifications",
+        url: "/admin/notifications",
+        icon: "Bell",
+    },
+    {
+        title: "Analytics",
+        url: "/admin/analytics",
+        icon: "BarChart3",
+    },
+    {
+        title: "System",
+        icon: "Settings",
+        items: [
+            {
+                title: "Backup & Restore",
+                url: "/admin/system/backup",
+            },
+            {
+                title: "Document Archives",
+                url: "/admin/system/documents",
+            },
+        ],
     },
 ]
 
@@ -77,18 +148,90 @@ export const wardenMenuItems = [
     },
     {
         title: "Approvals",
-        url: "/warden/approvals",
-        icon: "ClipboardList",
+        icon: "CheckSquare",
+        items: [
+            {
+                title: "All Approvals",
+                url: "/warden/approvals",
+            },
+            {
+                title: "Room Allotments",
+                url: "/warden/approvals/room-allotments",
+            },
+            {
+                title: "Hostel Changes",
+                url: "/warden/approvals/hostel-changes",
+            },
+            {
+                title: "Complaints",
+                url: "/warden/approvals/complaints",
+            },
+        ],
     },
     {
         title: "Requisitions",
         url: "/warden/requisitions",
-        icon: "FileText",
+        icon: "ClipboardList",
+    },
+    {
+        title: "Mess Management",
+        icon: "Utensils",
+        items: [
+            {
+                title: "Mess Menu",
+                url: "/warden/mess/menu",
+            },
+            {
+                title: "Quality Feedback",
+                url: "/warden/mess/feedback",
+            },
+        ],
     },
     {
         title: "Reports",
-        url: "/warden/reports",
         icon: "FileText",
+        items: [
+            {
+                title: "All Reports",
+                url: "/warden/reports",
+            },
+            {
+                title: "Occupancy",
+                url: "/warden/reports/occupancy",
+            },
+            {
+                title: "Complaints",
+                url: "/warden/reports/complaints",
+            },
+            {
+                title: "Requisitions",
+                url: "/warden/reports/requisitions",
+            },
+            {
+                title: "Payments",
+                url: "/warden/reports/payments",
+            },
+        ],
+    },
+    {
+        title: "Announcements",
+        url: "/warden/announcements",
+        icon: "Megaphone",
+    },
+    {
+        title: "Caretakers",
+        url: "/warden/caretakers",
+        icon: "Users",
+    },
+    {
+        title: "Inventory",
+        url: "/warden/inventory",
+        icon: "Package",
+    },
+    {
+        title: "Messages",
+        url: "/warden/messages",
+        icon: "MessageSquare",
     },
 ]
 
@@ -99,19 +242,72 @@ export const deanMenuItems = [
         icon: "LayoutDashboard",
     },
     {
-        title: "Announcements",
-        url: "/dean/announcements",
-        icon: "MessageSquare",
-    },
-    {
         title: "Requisitions",
-        url: "/dean/requisitions",
         icon: "ClipboardList",
+        items: [
+            {
+                title: "All Requisitions",
+                url: "/dean/requisitions",
+            },
+            {
+                title: "Pending Approval",
+                url: "/dean/requisitions/pending",
+            },
+            {
+                title: "Approved",
+                url: "/dean/requisitions/approved",
+            },
+            {
+                title: "Rejected",
+                url: "/dean/requisitions/rejected",
+            },
+        ],
     },
     {
         title: "Reports",
-        url: "/dean/reports",
         icon: "FileText",
+        items: [
+            {
+                title: "All Reports",
+                url: "/dean/reports",
+            },
+            {
+                title: "Occupancy",
+                url: "/dean/reports/occupancy",
+            },
+            {
+                title: "Complaints",
+                url: "/dean/reports/complaints",
+            },
+            {
+                title: "Financial Summary",
+                url: "/dean/reports/financial",
+            },
+        ],
+    },
+    {
+        title: "Fund Management",
+        icon: "DollarSign",
+        items: [
+            {
+                title: "Fund Usage",
+                url: "/dean/funds/usage",
+            },
+            {
+                title: "Budget Allocation",
+                url: "/dean/funds/budget",
+            },
+        ],
+    },
+    {
+        title: "Announcements",
+        url: "/dean/announcements",
+        icon: "Megaphone",
+    },
+    {
+        title: "Feedback & Comments",
+        url: "/dean/feedback",
+        icon: "MessageCircle",
     },
 ]
 
