@@ -10,7 +10,6 @@ import {
     FileText,
     AlertTriangle,
     Phone,
-    Mail,
     Bed,
     Wifi,
     Fan,
@@ -57,117 +56,127 @@ export default function RoomAllotment() {
     ]
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-500">
             <BackButton />
-            <div className="glass rounded-lg p-6">
-                <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <DoorOpen className="h-6 w-6 text-primary" />
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 dark:from-green-500/20 dark:via-emerald-500/20 dark:to-teal-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-teal-400/30 to-cyan-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative flex items-center gap-4">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-2xl shadow-green-500/50">
+                        <DoorOpen className="h-8 w-8 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold">Room Allotment</h1>
-                        <p className="text-muted-foreground mt-1">Your hostel room details and information</p>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
+                            Room Allotment
+                        </h1>
+                        <p className="text-muted-foreground mt-1 text-lg">Your hostel room details and information</p>
                     </div>
                 </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
-                <div className="glass rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                            <DoorOpen className="h-5 w-5" />
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <div className="flex items-center justify-between mb-6 dark:text-white">
+                        <h3 className="text-xl font-bold flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/50">
+                                <DoorOpen className="h-5 w-5 text-white" />
+                            </div>
                             Room Details
                         </h3>
                     </div>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center py-2 border-b border-border/50">
-                            <span className="text-sm text-muted-foreground flex items-center gap-2">
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center py-3 px-4 rounded-xl bg-gradient-to-br from-blue-50/80 to-cyan-50/80 dark:from-blue-950/30 dark:to-cyan-950/30 border border-blue-200/50 dark:border-blue-800/50">
+                            <span className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
                                 <DoorOpen className="h-4 w-4" />
                                 Room Number
                             </span>
-                            <span className="font-semibold">{roomDetails.roomNumber}</span>
+                            <span className="font-bold text-blue-900 dark:text-blue-100">{roomDetails.roomNumber}</span>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b border-border/50">
-                            <span className="text-sm text-muted-foreground flex items-center gap-2">
+                        <div className="flex justify-between items-center py-3 px-4 rounded-xl bg-gradient-to-br from-purple-50/80 to-pink-50/80 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200/50 dark:border-purple-800/50">
+                            <span className="text-sm font-semibold text-purple-700 dark:text-purple-300 flex items-center gap-2">
                                 <Building2 className="h-4 w-4" />
                                 Hostel
                             </span>
-                            <span className="font-semibold">{roomDetails.hostelName}</span>
+                            <span className="font-bold text-purple-900 dark:text-purple-100">{roomDetails.hostelName}</span>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b border-border/50">
-                            <span className="text-sm text-muted-foreground flex items-center gap-2">
+                        <div className="flex justify-between items-center py-3 px-4 rounded-xl bg-gradient-to-br from-orange-50/80 to-amber-50/80 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200/50 dark:border-orange-800/50">
+                            <span className="text-sm font-semibold text-orange-700 dark:text-orange-300 flex items-center gap-2">
                                 <Building2 className="h-4 w-4" />
                                 Floor
                             </span>
-                            <span className="font-semibold">{roomDetails.floor}</span>
+                            <span className="font-bold text-orange-900 dark:text-orange-100">{roomDetails.floor}</span>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b border-border/50">
-                            <span className="text-sm text-muted-foreground flex items-center gap-2">
+                        <div className="flex justify-between items-center py-3 px-4 rounded-xl bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200/50 dark:border-green-800/50">
+                            <span className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center gap-2">
                                 <Bed className="h-4 w-4" />
                                 Room Type
                             </span>
-                            <span className="font-semibold">{roomDetails.roomType}</span>
+                            <span className="font-bold text-green-900 dark:text-green-100">{roomDetails.roomType}</span>
                         </div>
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-sm text-muted-foreground flex items-center gap-2">
+                        <div className="flex justify-between items-center py-3 px-4 rounded-xl bg-gradient-to-br from-rose-50/80 to-red-50/80 dark:from-rose-950/30 dark:to-red-950/30 border border-rose-200/50 dark:border-rose-800/50">
+                            <span className="text-sm font-semibold text-rose-700 dark:text-rose-300 flex items-center gap-2">
                                 <Users className="h-4 w-4" />
                                 Occupancy
                             </span>
-                            <span className="font-semibold">
+                            <span className="font-bold text-rose-900 dark:text-rose-100">
                                 {roomDetails.currentOccupancy}/{roomDetails.capacity}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div className="glass rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                            <CheckCircle className="h-5 w-5 text-green-500" />
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold flex items-center gap-3 dark:text-white">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/50">
+                                <CheckCircle className="h-5 w-5 text-white" />
+                            </div>
                             Room Facilities
                         </h3>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {roomDetails.facilities.map((facility, idx) => (
-                            <div key={idx} className="flex items-center gap-2 text-sm p-2 rounded-lg glass">
-                                <div className="text-green-500">{facility.icon}</div>
-                                <span>{facility.name}</span>
+                            <div key={idx} className="flex items-center gap-2 text-sm p-3 rounded-xl bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200/50 dark:border-green-800/50 hover:scale-105 transition-transform duration-300 shadow-sm">
+                                <div className="text-green-600 dark:text-green-400">{facility.icon}</div>
+                                <span className="font-semibold text-green-900 dark:text-green-100">{facility.name}</span>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            <div className="glass rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Users className="h-5 w-5" />
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-3 dark:text-white">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/50">
+                        <Users className="h-5 w-5 text-white" />
+                    </div>
                     Roommates
                 </h3>
                 <div className="space-y-4">
                     {roommates.map((roommate, idx) => (
-                        <div key={idx} className="glass rounded-lg p-4 hover:shadow-md transition-all">
+                        <div key={idx} className="group bg-gradient-to-br from-purple-50/80 to-pink-50/80 dark:from-purple-950/30 dark:to-pink-950/30 backdrop-blur-xl border border-purple-200/50 dark:border-purple-800/50 rounded-2xl p-5 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
                             <div className="flex items-start gap-4">
-                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                    <Users className="h-6 w-6 text-primary" />
+                                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/50 group-hover:scale-110 transition-transform">
+                                    <Users className="h-7 w-7 text-white" />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-semibold mb-2">{roommate.name}</h4>
-                                    <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-1">
-                                            <FileText className="h-3 w-3" />
-                                            Student ID: {roommate.studentId}
+                                    <h4 className="font-bold text-lg mb-3 text-purple-900 dark:text-purple-100">{roommate.name}</h4>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div className="flex items-center gap-2 p-2 rounded-lg bg-white/60 dark:bg-gray-900/40">
+                                            <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                            <span className="font-medium text-gray-700 dark:text-gray-300">ID: {roommate.studentId}</span>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <FileText className="h-3 w-3" />
-                                            Course: {roommate.course}
+                                        <div className="flex items-center gap-2 p-2 rounded-lg bg-white/60 dark:bg-gray-900/40">
+                                            <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                            <span className="font-medium text-gray-700 dark:text-gray-300">{roommate.course}</span>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <FileText className="h-3 w-3" />
-                                            Year: {roommate.year}
+                                        <div className="flex items-center gap-2 p-2 rounded-lg bg-white/60 dark:bg-gray-900/40">
+                                            <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                            <span className="font-medium text-gray-700 dark:text-gray-300">{roommate.year}</span>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <Phone className="h-3 w-3" />
-                                            Phone: {roommate.phone}
+                                        <div className="flex items-center gap-2 p-2 rounded-lg bg-white/60 dark:bg-gray-900/40">
+                                            <Phone className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                            <span className="font-medium text-gray-700 dark:text-gray-300">{roommate.phone}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -175,68 +184,6 @@ export default function RoomAllotment() {
                         </div>
                     ))}
                 </div>
-            </div>
-
-            <div className="glass rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Quick Actions
-                </h3>
-                <div className="grid gap-3 md:grid-cols-3">
-                    <Button variant="outline" className="w-full flex items-center gap-2">
-                        <DoorOpen className="h-4 w-4" />
-                        Request Room Change
-                    </Button>
-                    <Button variant="outline" className="w-full flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        Report Issue
-                    </Button>
-                    <Button variant="outline" className="w-full flex items-center gap-2">
-                        <Download className="h-4 w-4" />
-                        Allotment Letter
-                    </Button>
-                </div>
-            </div>
-
-            <div className="glass rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-primary" />
-                    Hostel Rules & Guidelines
-                </h3>
-                <ul className="space-y-3">
-                    <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">
-                            Maintain cleanliness in your room and common areas
-                        </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">Respect quiet hours: 10 PM - 6 AM</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">
-                            Visitors allowed only during designated hours
-                        </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">
-                            No smoking or alcohol consumption in hostel premises
-                        </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">
-                            Report any maintenance issues immediately
-                        </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">Keep your room locked when away</span>
-                    </li>
-                </ul>
             </div>
         </div>
     )

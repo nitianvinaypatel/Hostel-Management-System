@@ -1,13 +1,25 @@
-import "./globals.css"
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { ReduxProvider } from '@/store/provider';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Hostel Management System',
+  description: 'Complete hostel management solution',
+};
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">{children}</body>
+    <html lang="en">
+      <body className={inter.className}>
+        <ReduxProvider>{children}</ReduxProvider>
+      </body>
     </html>
-  )
+  );
 }

@@ -94,50 +94,66 @@ export default function StudentRequests() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-500">
             <BackButton />
-            <div className="glass rounded-lg p-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-primary" />
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-teal-500/10 dark:from-blue-500/20 dark:via-cyan-500/20 dark:to-teal-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-teal-400/30 to-emerald-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-2xl shadow-blue-500/50">
+                            <FileText className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                                Requests
+                            </h1>
+                            <p className="text-muted-foreground mt-1 text-lg">Submit and track your requests</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-3xl font-bold">Requests</h1>
-                        <p className="text-muted-foreground mt-1">Submit and track your requests</p>
-                    </div>
+                    <Button
+                        onClick={() => setShowForm(!showForm)}
+                        className={`h-12 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 ${showForm
+                            ? 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 shadow-red-500/30'
+                            : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-blue-500/30'
+                            }`}
+                    >
+                        {showForm ? (
+                            <>
+                                <X className="h-5 w-5" />
+                                Cancel
+                            </>
+                        ) : (
+                            <>
+                                <Plus className="h-5 w-5" />
+                                New Request
+                            </>
+                        )}
+                    </Button>
                 </div>
-                <Button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2">
-                    {showForm ? (
-                        <>
-                            <X className="h-4 w-4" />
-                            Cancel
-                        </>
-                    ) : (
-                        <>
-                            <Plus className="h-4 w-4" />
-                            New Request
-                        </>
-                    )}
-                </Button>
             </div>
 
             {showForm && (
-                <div className="glass rounded-lg p-6">
-                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/50">
+                            <FileText className="h-5 w-5 text-white" />
+                        </div>
                         Submit New Request
                     </h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="type" className="flex items-center gap-2">
-                                <Tag className="h-4 w-4" />
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-3">
+                            <Label htmlFor="type" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-md">
+                                    <Tag className="h-4 w-4 text-white" />
+                                </div>
                                 Request Type *
                             </Label>
                             <select
                                 id="type"
                                 value={formData.type}
                                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="flex h-12 w-full rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm px-4 py-2 text-sm font-medium focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
                                 required
                             >
                                 <option value="">Select Type</option>
@@ -149,9 +165,11 @@ export default function StudentRequests() {
                             </select>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="subject" className="flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
+                        <div className="space-y-3">
+                            <Label htmlFor="subject" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center shadow-md">
+                                    <FileText className="h-4 w-4 text-white" />
+                                </div>
                                 Subject *
                             </Label>
                             <Input
@@ -159,13 +177,16 @@ export default function StudentRequests() {
                                 value={formData.subject}
                                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                                 placeholder="Brief subject of your request"
+                                className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-pink-500 dark:focus:border-pink-400 transition-all duration-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
                                 required
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="description" className="flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
+                        <div className="space-y-3">
+                            <Label htmlFor="description" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md">
+                                    <FileText className="h-4 w-4 text-white" />
+                                </div>
                                 Description *
                             </Label>
                             <textarea
@@ -173,54 +194,54 @@ export default function StudentRequests() {
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 placeholder="Provide detailed description of your request"
-                                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="flex min-h-[140px] w-full rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm px-4 py-3 text-sm font-medium focus:border-orange-500 dark:focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 resize-none"
                                 required
                             />
                         </div>
 
-                        <Button type="submit" className="w-full flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4" />
+                        <Button type="submit" className="w-full h-14 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold text-base shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2">
+                            <CheckCircle className="h-5 w-5" />
                             Submit Request
                         </Button>
                     </form>
                 </div>
             )}
 
-            <div className="glass rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 dark:text-white">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/50">
+                        <FileText className="h-5 w-5 text-white" />
+                    </div>
                     My Requests
                 </h2>
                 <div className="space-y-4">
                     {requests.map((request) => (
-                        <div key={request.id} className="glass rounded-lg p-4 hover:shadow-md transition-all">
-                            <div className="flex items-start justify-between mb-2">
+                        <div key={request.id} className="group bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 rounded-2xl p-6 hover:shadow-xl hover:scale-[1.02] hover:border-primary/50 transition-all duration-300">
+                            <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <h3 className="font-semibold">{request.subject}</h3>
+                                    <div className="flex items-center gap-3 mb-3 flex-wrap">
+                                        <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">{request.subject}</h3>
                                         <span
-                                            className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${getStatusColor(
+                                            className={`text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 font-semibold shadow-md ${getStatusColor(
                                                 request.status
                                             )}`}
                                         >
                                             {getStatusIcon(request.status)}
-                                            {request.status}
+                                            {request.status.toUpperCase()}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-muted-foreground mb-2">{request.description}</p>
-                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                        <span className="flex items-center gap-1">
-                                            <FileText className="h-3 w-3" />
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">{request.description}</p>
+                                    <div className="flex items-center gap-4 text-xs font-medium flex-wrap">
+                                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-100/80 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                                            <FileText className="h-3.5 w-3.5" />
                                             ID: {request.id}
                                         </span>
-                                        <span>•</span>
-                                        <span className="flex items-center gap-1">
-                                            <Tag className="h-3 w-3" />
+                                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                            <Tag className="h-3.5 w-3.5" />
                                             {request.type}
                                         </span>
-                                        <span>•</span>
-                                        <span className="flex items-center gap-1">
-                                            <Calendar className="h-3 w-3" />
+                                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-100/80 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
+                                            <Calendar className="h-3.5 w-3.5" />
                                             {new Date(request.date).toLocaleDateString()}
                                         </span>
                                     </div>

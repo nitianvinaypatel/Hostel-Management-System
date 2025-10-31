@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import {
     BadgeCheck,
     Bell,
@@ -8,6 +9,10 @@ import {
     LogOut,
     Sparkles,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAppSelector, useAppDispatch } from "@/store/hooks"
+import { logout, setCredentials } from "@/store/slices/authSlice"
+import { clearAuthCookie, getAuthCookie, getAuthToken } from "@/lib/auth"
 
 import {
     Avatar,
@@ -30,16 +35,47 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar"
 
-export function NavUser({
-    user,
-}: {
-    user: {
-        name: string
-        email: string
-        avatar: string
-    }
-}) {
+export function NavUser() {
     const { isMobile } = useSidebar()
+    const router = useRouter()
+    const dispatch = useAppDispatch()
+    const [mounted, setMounted] = useState(false)
+
+    // Get user from Redux store
+    const { user } = useAppSelector((state) => state.auth)
+
+    // Load user from localStorage on mount
+    useEffect(() => {
+        setMounted(true)
+        if (!user) {
+            const storedUser = getAuthCookie()
+            const storedToken = getAuthToken()
+            if (storedUser && storedToken) {
+                dispatch(setCredentials({ user: storedUser, token: storedToken }))
+            }
+        }
+    }, [user, dispatch])
+
+    const handleLogout = () => {
+        // Clear Redux state
+        dispatch(logout())
+
+        // Clear localStorage
+        clearAuthCookie()
+
+        // Redirect to login
+        router.push("/login")
+    }
+
+    // Don't render until mounted (avoid hydration mismatch)
+    if (!mounted) {
+        return null
+    }
+
+    // If no user, show loading or default
+    if (!user) {
+        return null
+    }
 
     return (
         <SidebarMenu>
@@ -51,7 +87,7 @@ export function NavUser({
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
-                                <AvatarImage src={user.avatar} alt={user.name} />
+                                <AvatarImage src={user.profileImage || ""} alt={user.name} />
                                 <AvatarFallback className="rounded-lg">
                                     {user.name.slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
@@ -72,7 +108,7 @@ export function NavUser({
                         <DropdownMenuLabel className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="h-8 w-8 rounded-lg">
-                                    <AvatarImage src={user.avatar} alt={user.name} />
+                                    <AvatarImage src={user.profileImage || ""} alt={user.name} />
                                     <AvatarFallback className="rounded-lg">
                                         {user.name.slice(0, 2).toUpperCase()}
                                     </AvatarFallback>
@@ -80,40 +116,34 @@ export function NavUser({
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">{user.name}</span>
                                     <span className="truncate text-xs">{user.email}</span>
+                                    <span className="truncate text-xs text-muted-foreground capitalize">{user.role}</span>
                                 </div>
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
+                        {/* <DropdownMenuGroup>
                             <DropdownMenuItem>
                                 <Sparkles />
                                 Upgrade to Pro
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuSeparator /> */}
                         <DropdownMenuGroup>
                             <DropdownMenuItem>
                                 <BadgeCheck />
                                 Account
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            {/* <DropdownMenuItem>
                                 <CreditCard />
                                 Billing
-                            </DropdownMenuItem>
+                            </DropdownMenuItem> */}
                             <DropdownMenuItem>
                                 <Bell />
                                 Notifications
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => {
-                                if (typeof window !== "undefined") {
-                                    localStorage.removeItem("user")
-                                    window.location.href = "/login"
-                                }
-                            }}
-                        >
+                        <DropdownMenuItem onClick={handleLogout}>
                             <LogOut />
                             Log out
                         </DropdownMenuItem>

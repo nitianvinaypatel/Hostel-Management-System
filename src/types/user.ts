@@ -5,8 +5,10 @@ export interface User {
     email: string
     name: string
     role: UserRole
+    phone?: string
+    profileImage?: string
     hostelId?: string
     roomNumber?: string
-    createdAt: string
-    updatedAt: string
+    createdAt?: string
+    updatedAt?: string
 }

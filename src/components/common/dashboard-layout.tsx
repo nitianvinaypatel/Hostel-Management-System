@@ -64,20 +64,20 @@ export function DashboardLayout({ children, menuItems, role }: DashboardLayoutPr
         <SidebarProvider>
             <AppSidebar items={menuItems} role={role} />
             <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/50 glass sticky top-0 z-10 shadow-sm">
+                <header className="flex h-16 shrink-0 items-center gap-2 border-b border-gray-200/50 dark:border-gray-800/50 bg-white/80 dark:bg-black/80 backdrop-blur-xl sticky top-0 z-10 shadow-sm">
                     <div className="flex items-center gap-2 px-4 flex-1">
-                        <SidebarTrigger className="-ml-1" />
-                        <Separator orientation="vertical" className="mr-2 h-4" />
+                        <SidebarTrigger className="-ml-1 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" />
+                        <Separator orientation="vertical" className="mr-2 h-4 bg-gray-300 dark:bg-gray-700" />
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem className="hidden md:block">
-                                    <BreadcrumbLink href={`/${role}/dashboard`}>
+                                    <BreadcrumbLink href={`/${role}/dashboard`} className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                                         {roleDisplayName} Dashboard
                                     </BreadcrumbLink>
                                 </BreadcrumbItem>
-                                <BreadcrumbSeparator className="hidden md:block" />
+                                <BreadcrumbSeparator className="hidden md:block text-gray-400 dark:text-gray-600" />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>{currentPageTitle}</BreadcrumbPage>
+                                    <BreadcrumbPage className="text-gray-900 dark:text-gray-100 font-semibold">{currentPageTitle}</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>

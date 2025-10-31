@@ -176,7 +176,7 @@ const Sidebar = React.forwardRef<
                     <div
                         ref={ref}
                         className={cn(
-                            "fixed inset-y-0 z-50 flex h-full w-[--sidebar-width-mobile] flex-col bg-sidebar/80 backdrop-blur-xl border-r border-sidebar-border/50 text-sidebar-foreground transition-transform duration-200 ease-in-out",
+                            "fixed inset-y-0 z-50 flex h-full w-[--sidebar-width-mobile] flex-col bg-white/80 dark:bg-black/95 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 text-sidebar-foreground transition-transform duration-200 ease-in-out",
                             side === "left" ? "left-0" : "right-0",
                             openMobile
                                 ? "translate-x-0"
@@ -227,7 +227,7 @@ const Sidebar = React.forwardRef<
                 >
                     <div
                         data-sidebar="sidebar"
-                        className="flex h-full w-full flex-col bg-sidebar/80 backdrop-blur-xl border-r border-sidebar-border/50 group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border/50 group-data-[variant=floating]:shadow-xl"
+                        className="flex h-full w-full flex-col bg-white/80 dark:bg-black/95 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-gray-200/50 dark:group-data-[variant=floating]:border-gray-800/50 group-data-[variant=floating]:shadow-xl"
                     >
                         {children}
                     </div>

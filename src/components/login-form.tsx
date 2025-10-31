@@ -1,86 +1,101 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import authData from "@/data/auth.json"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useLoginMutation } from "@/store/api/authApi";
+import { useAppDispatch } from "@/store/hooks";
+import { setCredentials } from "@/store/slices/authSlice";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"form">) {
-  const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [login, { isLoading }] = useLoginMutation();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setError("");
 
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      // Call login API
+      const result = await login({
+        email,
+        password,
+      }).unwrap();
 
-      // Find user in auth.json
-      const user = authData.users.find(
-        (u) => u.email === email && u.password === password
-      )
+      console.log("Login response:", result);
 
-      if (user) {
-        // Store user data in localStorage
-        localStorage.setItem("user", JSON.stringify({
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
-        }))
-
-        console.log(`Login successful! Welcome ${user.name} (${user.role})`)
-
-        // Redirect based on role
-        switch (user.role) {
-          case "admin":
-            router.push("/admin/dashboard")
-            break
-          case "student":
-            router.push("/student/dashboard")
-            break
-          case "warden":
-            router.push("/warden/dashboard")
-            break
-          case "dean":
-            router.push("/dean/dashboard")
-            break
-          case "caretaker":
-            router.push("/caretaker/dashboard")
-            break
-          default:
-            router.push("/dashboard")
-        }
-      } else {
-        setError("Invalid email or password")
+      // Check if response has the expected structure
+      if (!result || !result.data) {
+        throw new Error("Invalid response from server");
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.")
-    } finally {
-      setIsLoading(false)
+
+      const { user, token } = result.data;
+
+      if (!user || !token) {
+        throw new Error("Missing user or token in response");
+      }
+
+      // Save credentials to Redux store
+      dispatch(setCredentials({
+        user,
+        token,
+      }));
+
+      // Save to localStorage for persistence
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      console.log(`Login successful! Welcome ${user.name} (${user.role})`);
+
+      // Redirect based on role
+      switch (user.role) {
+        case "admin":
+          router.push("/admin/dashboard");
+          break;
+        case "student":
+          router.push("/student/dashboard");
+          break;
+        case "warden":
+          router.push("/warden/dashboard");
+          break;
+        case "dean":
+          router.push("/dean/dashboard");
+          break;
+        case "caretaker":
+          router.push("/caretaker/dashboard");
+          break;
+        default:
+          router.push("/dashboard");
+      }
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      setError(err?.data?.message || err?.message || "Invalid email or password");
     }
-  }
+  };
 
   const handleGoogleLogin = () => {
-    console.log("Google login clicked")
+    console.log("Google login clicked");
     // Implement Google OAuth if needed
     // Example: window.location.href = "/api/auth/google"
-  }
+  };
 
   return (
-    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} {...props}>
+    <form
+      className={cn("flex flex-col gap-6", className)}
+      onSubmit={handleSubmit}
+      {...props}
+    >
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
         <p className="text-white/80 text-sm">
@@ -94,7 +109,9 @@ export function LoginForm({
       </div>
       <div className="grid gap-6">
         <div className="grid gap-2">
-          <Label htmlFor="email" className="text-white font-medium">Email</Label>
+          <Label htmlFor="email" className="text-white font-medium">
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -108,7 +125,9 @@ export function LoginForm({
         </div>
         <div className="grid gap-2">
           <div className="flex items-center">
-            <Label htmlFor="password" className="text-white font-medium">Password</Label>
+            <Label htmlFor="password" className="text-white font-medium">
+              Password
+            </Label>
             <a
               href="#"
               className="ml-auto text-sm text-white/90 hover:text-white underline-offset-4 hover:underline"
@@ -145,7 +164,11 @@ export function LoginForm({
           disabled={isLoading}
           className="w-full bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white font-medium py-2.5 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5 mr-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="w-5 h-5 mr-2"
+          >
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -168,18 +191,14 @@ export function LoginForm({
       </div>
       <div className="text-center text-sm text-white/80">
         Don&apos;t have an account?{" "}
-        <a href="#" className="text-white hover:text-white/90 font-medium underline-offset-4 hover:underline">
+        <button
+          type="button"
+          onClick={() => router.push("/register")}
+          className="text-white hover:text-white/90 font-medium underline-offset-4 hover:underline bg-transparent border-none cursor-pointer"
+        >
           Sign up
-        </a>
+        </button>
       </div>
-
-      {/* Demo Credentials */}
-      {/* <div className="text-xs text-white/70 bg-white/5 backdrop-blur-sm p-3 rounded-md border border-white/10">
-        <p className="font-semibold mb-1 text-white">Demo Credentials:</p>
-        <p>Admin: admin@hostel.com / admin123</p>
-        <p>Student: student@hostel.com / student123</p>
-        <p>Warden: warden@hostel.com / warden123</p>
-      </div> */}
     </form>
-  )
+  );
 }
