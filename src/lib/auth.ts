@@ -1,9 +1,4 @@
-export type User = {
-    id: string
-    email: string
-    role: "admin" | "student" | "warden" | "dean" | "caretaker"
-    name: string
-}
+import { User } from "@/types/user"
 
 export function setAuthCookie(user: User) {
     if (typeof window !== "undefined") {
