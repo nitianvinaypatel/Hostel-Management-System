@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import * as LucideIcons from "lucide-react"
 import { ChevronDown } from "lucide-react"
@@ -83,11 +84,17 @@ export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.Co
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" className="data-[state=open]:bg-gradient-to-r data-[state=open]:from-primary/10 data-[state=open]:to-primary/5 hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
-                            <div className="flex aspect-square size-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/50">
-                                <span className="text-lg">{config.icon}</span>
+                            <div className="flex items-center justify-center">
+                                <Image
+                                    src="/images/Logo_NITMZ.png"
+                                    alt="NIT Mizoram Logo"
+                                    width={40}
+                                    height={40}
+                                    className="object-contain"
+                                />
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">Hostel MS</span>
+                                <span className="truncate font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">NIT Mizoram</span>
                                 <span className="truncate text-xs font-semibold text-muted-foreground capitalize">
                                     {role}
                                 </span>

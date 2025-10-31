@@ -37,53 +37,60 @@ export default function FinancialSummary() {
     ]
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/dean/reports">
-                        <Button variant="outline" size="icon">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold">Financial Summary Report</h1>
-                        <p className="text-muted-foreground">Comprehensive financial overview</p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 dark:from-green-500/20 dark:via-emerald-500/20 dark:to-teal-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-teal-400/30 to-green-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link href="/dean/reports">
+                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl">
+                                <ArrowLeft className="h-5 w-5" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
+                                Financial Summary Report 💰
+                            </h1>
+                            <p className="text-muted-foreground text-lg mt-2">Comprehensive financial overview</p>
+                        </div>
                     </div>
+                    <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg shadow-green-500/50">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export PDF
+                    </Button>
                 </div>
-                <Button>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export PDF
-                </Button>
             </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Overall Financial Status</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Overall Financial Status</h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-                    <div className="p-4 border rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">Total Budget</p>
-                        <p className="text-2xl font-bold">₹{(summary.totalBudget / 100000).toFixed(1)}L</p>
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Total Budget</p>
+                        <p className="text-3xl font-bold dark:text-white">₹{(summary.totalBudget / 100000).toFixed(1)}L</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-orange-50">
-                        <p className="text-sm text-muted-foreground mb-1">Total Spent</p>
-                        <p className="text-2xl font-bold text-orange-600">₹{(summary.totalSpent / 100000).toFixed(1)}L</p>
+                    <div className="p-5 border border-orange-200 dark:border-orange-800 rounded-xl bg-gradient-to-br from-orange-50/80 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Total Spent</p>
+                        <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">₹{(summary.totalSpent / 100000).toFixed(1)}L</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-yellow-50">
-                        <p className="text-sm text-muted-foreground mb-1">Pending</p>
-                        <p className="text-2xl font-bold text-yellow-600">₹{(summary.totalPending / 100000).toFixed(1)}L</p>
+                    <div className="p-5 border border-yellow-200 dark:border-yellow-800 rounded-xl bg-gradient-to-br from-yellow-50/80 to-yellow-100/50 dark:from-yellow-900/20 dark:to-yellow-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Pending</p>
+                        <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">₹{(summary.totalPending / 100000).toFixed(1)}L</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-green-50">
-                        <p className="text-sm text-muted-foreground mb-1">Available</p>
-                        <p className="text-2xl font-bold text-green-600">₹{(summary.totalAvailable / 100000).toFixed(1)}L</p>
+                    <div className="p-5 border border-green-200 dark:border-green-800 rounded-xl bg-gradient-to-br from-green-50/80 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Available</p>
+                        <p className="text-3xl font-bold text-green-600 dark:text-green-400">₹{(summary.totalAvailable / 100000).toFixed(1)}L</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-primary/5">
-                        <p className="text-sm text-muted-foreground mb-1">Utilization</p>
-                        <p className="text-2xl font-bold text-primary">{summary.utilizationRate}%</p>
+                    <div className="p-5 border border-primary/30 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Utilization</p>
+                        <p className="text-3xl font-bold text-primary">{summary.utilizationRate}%</p>
                     </div>
                 </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Hostel-wise Breakdown</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Hostel-wise Breakdown</h3>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
@@ -112,11 +119,11 @@ export default function FinancialSummary() {
                         </tbody>
                     </table>
                 </div>
-            </Card>
+            </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Category-wise Breakdown</h3>
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-xl font-bold mb-4 dark:text-white">Category-wise Breakdown</h3>
                     <div className="space-y-3">
                         {categoryWise.map((cat) => (
                             <div key={cat.category}>
@@ -139,10 +146,10 @@ export default function FinancialSummary() {
                             </div>
                         ))}
                     </div>
-                </Card>
+                </div>
 
-                <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Quarterly Trend</h3>
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-xl font-bold mb-4 dark:text-white">Quarterly Trend</h3>
                     <div className="space-y-4">
                         {quarterlyTrend.map((quarter) => (
                             <div key={quarter.quarter} className="p-3 border rounded-lg">
@@ -166,7 +173,7 @@ export default function FinancialSummary() {
                             </div>
                         ))}
                     </div>
-                </Card>
+                </div>
             </div>
         </div>
     )

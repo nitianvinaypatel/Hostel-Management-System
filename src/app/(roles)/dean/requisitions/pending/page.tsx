@@ -82,37 +82,46 @@ export default function PendingRequisitions() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Link href="/dean/requisitions">
-                    <Button variant="outline" size="icon">
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                </Link>
-                <div>
-                    <h1 className="text-3xl font-bold">Pending Requisitions</h1>
-                    <p className="text-muted-foreground">Requisitions awaiting dean approval</p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500/10 via-amber-500/10 to-yellow-500/10 dark:from-orange-500/20 dark:via-amber-500/20 dark:to-yellow-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-orange-400/30 to-amber-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-yellow-400/30 to-orange-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative flex items-center gap-4">
+                    <Link href="/dean/requisitions">
+                        <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl">
+                            <ArrowLeft className="h-5 w-5" />
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent">
+                            Pending Requisitions ⏳
+                        </h1>
+                        <p className="text-muted-foreground text-lg mt-2">Requisitions awaiting dean approval</p>
+                    </div>
                 </div>
             </div>
 
-            <Card className="p-6">
+            {/* Search and Content */}
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
                 <div className="mb-6 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         placeholder="Search requisitions..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 h-12 bg-white/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700"
                     />
                 </div>
 
                 <div className="space-y-4">
                     {filteredRequisitions.map((req) => (
-                        <Card key={req.id} className={`p-6 ${req.urgency === 'urgent' ? 'border-red-300 border-2' : ''}`}>
+                        <div key={req.id} className={`group p-6 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 border transition-all duration-300 hover:shadow-xl ${req.urgency === 'urgent' ? 'border-red-300 dark:border-red-700 border-2' : 'border-gray-200/50 dark:border-gray-700/50'
+                            }`}>
                             {req.urgency === 'urgent' && (
-                                <div className="flex items-center gap-2 mb-3 p-2 bg-red-50 border border-red-200 rounded">
-                                    <AlertTriangle className="h-5 w-5 text-red-600" />
-                                    <span className="text-sm font-semibold text-red-800">URGENT: Requires immediate attention</span>
+                                <div className="flex items-center gap-2 mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl">
+                                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 animate-pulse" />
+                                    <span className="text-sm font-bold text-red-800 dark:text-red-300">URGENT: Requires immediate attention</span>
                                 </div>
                             )}
 
@@ -156,9 +165,9 @@ export default function PendingRequisitions() {
                                         </div>
                                     </div>
 
-                                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-3">
-                                        <p className="text-xs font-semibold text-blue-800 mb-2">Warden&apos;s Recommendation:</p>
-                                        <p className="text-sm text-blue-900">{req.wardenComments}</p>
+                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl mb-3">
+                                        <p className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-2">Warden&apos;s Recommendation:</p>
+                                        <p className="text-sm text-blue-900 dark:text-blue-200 font-medium">{req.wardenComments}</p>
                                     </div>
 
                                     {req.attachments && req.attachments.length > 0 && (
@@ -185,9 +194,9 @@ export default function PendingRequisitions() {
                                 </div>
                             </div>
 
-                            <div className="border-t pt-4">
+                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                                 <div className="mb-4">
-                                    <Label htmlFor={`comments-${req.id}`}>Dean&apos;s Comments / Feedback</Label>
+                                    <Label htmlFor={`comments-${req.id}`} className="font-semibold dark:text-white">Dean&apos;s Comments / Feedback</Label>
                                     <textarea
                                         id={`comments-${req.id}`}
                                         value={selectedReq === req.id ? deanComments : ""}
@@ -196,29 +205,29 @@ export default function PendingRequisitions() {
                                             setDeanComments(e.target.value)
                                         }}
                                         placeholder="Add your comments or feedback..."
-                                        className="w-full px-3 py-2 border rounded-md min-h-[80px] mt-2"
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl min-h-[80px] mt-2 bg-white/50 dark:bg-gray-800/50 focus:ring-2 focus:ring-primary/50 transition-all"
                                     />
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <Button variant="outline" className="flex-1">
+                                    <Button variant="outline" className="flex-1 rounded-xl">
                                         <Eye className="h-4 w-4 mr-2" />
                                         View Full Details
                                     </Button>
-                                    <Button variant="default" className="flex-1" onClick={() => handleApprove(req.id)}>
+                                    <Button className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/50 rounded-xl" onClick={() => handleApprove(req.id)}>
                                         <Check className="h-4 w-4 mr-2" />
                                         Approve & Release Funds
                                     </Button>
-                                    <Button variant="destructive" className="flex-1" onClick={() => handleReject(req.id)}>
+                                    <Button className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg shadow-red-500/50 rounded-xl" onClick={() => handleReject(req.id)}>
                                         <X className="h-4 w-4 mr-2" />
                                         Reject
                                     </Button>
                                 </div>
                             </div>
-                        </Card>
+                        </div>
                     ))}
                 </div>
-            </Card>
+            </div>
         </div>
     )
 }

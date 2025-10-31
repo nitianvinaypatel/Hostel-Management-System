@@ -85,72 +85,79 @@ export default function OccupancyReport() {
     ]
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/dean/reports">
-                        <Button variant="outline" size="icon">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold">Occupancy Report</h1>
-                        <p className="text-muted-foreground">Detailed hostel occupancy statistics</p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-teal-500/10 dark:from-blue-500/20 dark:via-cyan-500/20 dark:to-teal-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-teal-400/30 to-blue-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link href="/dean/reports">
+                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl">
+                                <ArrowLeft className="h-5 w-5" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                                Occupancy Report 🏢
+                            </h1>
+                            <p className="text-muted-foreground text-lg mt-2">Detailed hostel occupancy statistics</p>
+                        </div>
                     </div>
+                    <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/50">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export PDF
+                    </Button>
                 </div>
-                <Button>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export PDF
-                </Button>
             </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Overall Occupancy Status</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Overall Occupancy Status</h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-                    <div className="p-4 border rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">Total Capacity</p>
-                        <p className="text-2xl font-bold">{overallStats.totalCapacity}</p>
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Total Capacity</p>
+                        <p className="text-3xl font-bold dark:text-white">{overallStats.totalCapacity}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-green-50">
-                        <p className="text-sm text-muted-foreground mb-1">Occupied</p>
-                        <p className="text-2xl font-bold text-green-600">{overallStats.totalOccupied}</p>
+                    <div className="p-5 border border-green-200 dark:border-green-800 rounded-xl bg-gradient-to-br from-green-50/80 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Occupied</p>
+                        <p className="text-3xl font-bold text-green-600 dark:text-green-400">{overallStats.totalOccupied}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-orange-50">
-                        <p className="text-sm text-muted-foreground mb-1">Vacant</p>
-                        <p className="text-2xl font-bold text-orange-600">{overallStats.totalVacant}</p>
+                    <div className="p-5 border border-orange-200 dark:border-orange-800 rounded-xl bg-gradient-to-br from-orange-50/80 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Vacant</p>
+                        <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{overallStats.totalVacant}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-primary/5">
-                        <p className="text-sm text-muted-foreground mb-1">Occupancy Rate</p>
-                        <p className="text-2xl font-bold text-primary">{overallStats.occupancyRate}%</p>
+                    <div className="p-5 border border-primary/30 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Occupancy Rate</p>
+                        <p className="text-3xl font-bold text-primary">{overallStats.occupancyRate}%</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-blue-50">
-                        <p className="text-sm text-muted-foreground mb-1">Male Students</p>
-                        <p className="text-2xl font-bold text-blue-600">{overallStats.maleStudents}</p>
+                    <div className="p-5 border border-blue-200 dark:border-blue-800 rounded-xl bg-gradient-to-br from-blue-50/80 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Male Students</p>
+                        <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{overallStats.maleStudents}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-pink-50">
-                        <p className="text-sm text-muted-foreground mb-1">Female Students</p>
-                        <p className="text-2xl font-bold text-pink-600">{overallStats.femaleStudents}</p>
+                    <div className="p-5 border border-pink-200 dark:border-pink-800 rounded-xl bg-gradient-to-br from-pink-50/80 to-pink-100/50 dark:from-pink-900/20 dark:to-pink-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Female Students</p>
+                        <p className="text-3xl font-bold text-pink-600 dark:text-pink-400">{overallStats.femaleStudents}</p>
                     </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-6">
                     <div className="flex justify-between mb-2">
-                        <span className="text-sm font-medium">Overall Occupancy</span>
+                        <span className="text-sm font-semibold dark:text-white">Overall Occupancy</span>
                         <span className="text-sm font-bold text-primary">{overallStats.occupancyRate}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
                         <div
-                            className="bg-green-500 h-4 rounded-full flex items-center justify-end pr-2"
+                            className="bg-gradient-to-r from-green-500 to-green-600 h-4 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
                             style={{ width: `${overallStats.occupancyRate}%` }}
                         >
                             <span className="text-xs text-white font-medium">{overallStats.occupancyRate}%</span>
                         </div>
                     </div>
                 </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Hostel-wise Occupancy</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Hostel-wise Occupancy</h3>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
@@ -202,11 +209,11 @@ export default function OccupancyReport() {
                         </tbody>
                     </table>
                 </div>
-            </Card>
+            </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Block-wise Distribution</h3>
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-xl font-bold mb-4 dark:text-white">Block-wise Distribution</h3>
                     <div className="space-y-3">
                         {blockWiseData.map((block, index) => (
                             <div key={index} className="p-3 border rounded-lg">
@@ -232,10 +239,10 @@ export default function OccupancyReport() {
                             </div>
                         ))}
                     </div>
-                </Card>
+                </div>
 
-                <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Floor-wise Distribution</h3>
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-xl font-bold mb-4 dark:text-white">Floor-wise Distribution</h3>
                     <div className="space-y-3">
                         {floorWiseData.map((floor, index) => (
                             <div key={index} className="p-3 border rounded-lg">
@@ -258,11 +265,11 @@ export default function OccupancyReport() {
                             </div>
                         ))}
                     </div>
-                </Card>
+                </div>
             </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Monthly Occupancy Trend (Last 6 Months)</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Monthly Occupancy Trend (Last 6 Months)</h3>
                 <div className="space-y-3">
                     {monthlyTrend.map((month) => (
                         <div key={month.month} className="flex items-center gap-4">
@@ -288,69 +295,79 @@ export default function OccupancyReport() {
                     ))}
                 </div>
 
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-green-600" />
+                <div className="mt-6 p-5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/50">
+                            <TrendingUp className="h-5 w-5 text-white" />
+                        </div>
                         <div>
-                            <p className="text-sm font-semibold text-green-900">Positive Trend</p>
-                            <p className="text-xs text-green-700">Occupancy has increased by 3.9% over the last 6 months</p>
+                            <p className="text-sm font-bold text-green-900 dark:text-green-100">Positive Trend</p>
+                            <p className="text-xs text-green-700 dark:text-green-300 font-medium">Occupancy has increased by 3.9% over the last 6 months</p>
                         </div>
                     </div>
                 </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Key Insights</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Key Insights</h3>
                 <div className="grid gap-4 md:grid-cols-2">
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-green-50/80 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20">
                         <div className="flex items-start gap-3">
-                            <Users className="h-5 w-5 text-green-600 mt-1" />
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/50 flex-shrink-0">
+                                <Users className="h-5 w-5 text-white" />
+                            </div>
                             <div>
-                                <p className="font-medium mb-1">High Occupancy</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-bold mb-1 dark:text-white">High Occupancy</p>
+                                <p className="text-sm text-muted-foreground font-medium">
                                     Hostel A has the highest occupancy rate at 95.6%, indicating strong demand
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-blue-50/80 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20">
                         <div className="flex items-start gap-3">
-                            <TrendingUp className="h-5 w-5 text-blue-600 mt-1" />
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50 flex-shrink-0">
+                                <TrendingUp className="h-5 w-5 text-white" />
+                            </div>
                             <div>
-                                <p className="font-medium mb-1">Growing Trend</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-bold mb-1 dark:text-white">Growing Trend</p>
+                                <p className="text-sm text-muted-foreground font-medium">
                                     Overall occupancy has steadily increased from 88.5% to 92.4% in 6 months
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-orange-50/80 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/20">
                         <div className="flex items-start gap-3">
-                            <Users className="h-5 w-5 text-orange-600 mt-1" />
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/50 flex-shrink-0">
+                                <Users className="h-5 w-5 text-white" />
+                            </div>
                             <div>
-                                <p className="font-medium mb-1">Available Capacity</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-bold mb-1 dark:text-white">Available Capacity</p>
+                                <p className="text-sm text-muted-foreground font-medium">
                                     153 beds are currently vacant across all hostels, providing room for new admissions
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-purple-50/80 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/20">
                         <div className="flex items-start gap-3">
-                            <TrendingUp className="h-5 w-5 text-purple-600 mt-1" />
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/50 flex-shrink-0">
+                                <TrendingUp className="h-5 w-5 text-white" />
+                            </div>
                             <div>
-                                <p className="font-medium mb-1">Balanced Distribution</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-bold mb-1 dark:text-white">Balanced Distribution</p>
+                                <p className="text-sm text-muted-foreground font-medium">
                                     Floor-wise occupancy is well-balanced, ranging from 91.6% to 93.6%
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </Card>
+            </div>
         </div>
     )
 }

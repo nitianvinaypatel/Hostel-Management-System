@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -109,36 +108,43 @@ export default function DeanAnnouncements() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold">Announcements</h1>
-                    <p className="text-muted-foreground">Send notices and announcements to hostels</p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-rose-500/10 dark:from-purple-500/20 dark:via-pink-500/20 dark:to-rose-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-purple-400/30 to-pink-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-rose-400/30 to-purple-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative flex justify-between items-center">
+                    <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+                            Announcements 📢
+                        </h1>
+                        <p className="text-muted-foreground text-lg mt-2">Send notices and announcements to hostels</p>
+                    </div>
+                    <Button onClick={() => setShowForm(!showForm)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-purple-500/50">
+                        <Plus className="h-4 w-4 mr-2" />
+                        New Announcement
+                    </Button>
                 </div>
-                <Button onClick={() => setShowForm(!showForm)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Announcement
-                </Button>
             </div>
 
             {showForm && (
-                <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Create New Announcement</h3>
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-xl font-bold mb-4 dark:text-white">Create New Announcement</h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="type">Announcement Type</Label>
+                            <Label htmlFor="type" className="font-semibold dark:text-white">Announcement Type</Label>
                             <select
                                 id="type"
                                 value={announcementType}
                                 onChange={(e) => setAnnouncementType(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white/50 dark:bg-gray-800/50 font-medium"
                             >
                                 <option value="general">General</option>
                                 <option value="notice">Notice</option>
                                 <option value="policy">Policy Update</option>
                                 <option value="urgent">Urgent Alert</option>
                             </select>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground font-medium">
                                 {announcementType === "urgent" && "⚠️ Urgent alerts will be highlighted and sent immediately"}
                                 {announcementType === "policy" && "📋 Policy updates will be marked as important"}
                                 {announcementType === "notice" && "📢 Regular notices for general information"}
@@ -147,94 +153,98 @@ export default function DeanAnnouncements() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="title">Title</Label>
+                            <Label htmlFor="title" className="font-semibold dark:text-white">Title</Label>
                             <Input
                                 id="title"
                                 placeholder="Enter announcement title"
                                 required
+                                className="h-10 rounded-xl bg-white/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="message">Message</Label>
+                            <Label htmlFor="message" className="font-semibold dark:text-white">Message</Label>
                             <textarea
                                 id="message"
                                 placeholder="Enter announcement message"
-                                className="w-full px-3 py-2 border rounded-md min-h-[120px]"
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl min-h-[120px] bg-white/50 dark:bg-gray-800/50"
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Target Hostels</Label>
+                            <Label className="font-semibold dark:text-white">Target Hostels</Label>
                             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                                <label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-accent">
+                                <label className="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
                                     <input
                                         type="checkbox"
                                         checked={selectedHostels.includes("all")}
                                         onChange={() => handleHostelToggle("all")}
+                                        className="rounded"
                                     />
                                     <Building className="h-4 w-4" />
-                                    <span className="text-sm">All Hostels</span>
+                                    <span className="text-sm font-medium">All Hostels</span>
                                 </label>
                                 {["Hostel A", "Hostel B", "Hostel C", "Hostel D"].map((hostel) => (
                                     <label
                                         key={hostel}
-                                        className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-accent"
+                                        className="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors"
                                     >
                                         <input
                                             type="checkbox"
                                             checked={selectedHostels.includes(hostel)}
                                             onChange={() => handleHostelToggle(hostel)}
                                             disabled={selectedHostels.includes("all")}
+                                            className="rounded"
                                         />
                                         <Building className="h-4 w-4" />
-                                        <span className="text-sm">{hostel}</span>
+                                        <span className="text-sm font-medium">{hostel}</span>
                                     </label>
                                 ))}
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Target Audience</Label>
+                            <Label className="font-semibold dark:text-white">Target Audience</Label>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 {["All", "Students", "Wardens", "Caretakers"].map((role) => (
                                     <label
                                         key={role}
-                                        className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-accent"
+                                        className="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors"
                                     >
                                         <input
                                             type="checkbox"
                                             checked={selectedRoles.includes(role)}
                                             onChange={() => handleRoleToggle(role)}
+                                            className="rounded"
                                         />
                                         <Users className="h-4 w-4" />
-                                        <span className="text-sm">{role}</span>
+                                        <span className="text-sm font-medium">{role}</span>
                                     </label>
                                 ))}
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Notification Options</Label>
+                            <Label className="font-semibold dark:text-white">Notification Options</Label>
                             <div className="space-y-2">
                                 <label className="flex items-center gap-2">
-                                    <input type="checkbox" defaultChecked />
-                                    <span className="text-sm">Send email notification</span>
+                                    <input type="checkbox" defaultChecked className="rounded" />
+                                    <span className="text-sm font-medium">Send email notification</span>
                                 </label>
                                 <label className="flex items-center gap-2">
-                                    <input type="checkbox" defaultChecked />
-                                    <span className="text-sm">Send SMS notification</span>
+                                    <input type="checkbox" defaultChecked className="rounded" />
+                                    <span className="text-sm font-medium">Send SMS notification</span>
                                 </label>
                                 <label className="flex items-center gap-2">
-                                    <input type="checkbox" defaultChecked />
-                                    <span className="text-sm">Show in-app notification</span>
+                                    <input type="checkbox" defaultChecked className="rounded" />
+                                    <span className="text-sm font-medium">Show in-app notification</span>
                                 </label>
                             </div>
                         </div>
 
-                        <div className="flex gap-3 pt-4 border-t">
-                            <Button type="submit" className="flex-1">
+                        <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <Button type="submit" className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-purple-500/50 rounded-xl">
                                 <Send className="h-4 w-4 mr-2" />
                                 Send Announcement
                             </Button>
@@ -242,119 +252,125 @@ export default function DeanAnnouncements() {
                                 type="button"
                                 variant="outline"
                                 onClick={() => setShowForm(false)}
+                                className="rounded-xl"
                             >
                                 Cancel
                             </Button>
                         </div>
                     </form>
-                </Card>
+                </div>
             )}
 
-            <div className="grid gap-4 md:grid-cols-4">
-                <Card className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <Megaphone className="h-6 w-6 text-blue-600" />
-                        <span className="text-2xl font-bold">{recentAnnouncements.length}</span>
+            {/* Stats Cards */}
+            <div className="grid gap-5 md:grid-cols-4">
+                <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 backdrop-blur-xl border border-blue-200/50 dark:border-blue-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total Announcements</h3>
+                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50">
+                            <Megaphone className="h-7 w-7 text-white" />
+                        </div>
                     </div>
-                    <p className="text-sm font-medium">Total Announcements</p>
-                    <p className="text-xs text-muted-foreground">All time</p>
-                </Card>
+                    <p className="text-4xl font-bold mb-2 text-blue-900 dark:text-blue-100">{recentAnnouncements.length}</p>
+                    <p className="text-xs text-muted-foreground font-medium">All time</p>
+                </div>
 
-                <Card className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <AlertTriangle className="h-6 w-6 text-red-600" />
-                        <span className="text-2xl font-bold">
-                            {recentAnnouncements.filter(a => a.type === "urgent").length}
-                        </span>
+                <div className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/50 dark:to-red-900/30 backdrop-blur-xl border border-red-200/50 dark:border-red-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-red-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-red-700 dark:text-red-300">Urgent Alerts</h3>
+                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/50">
+                            <AlertTriangle className="h-7 w-7 text-white" />
+                        </div>
                     </div>
-                    <p className="text-sm font-medium">Urgent Alerts</p>
-                    <p className="text-xs text-muted-foreground">This month</p>
-                </Card>
+                    <p className="text-4xl font-bold mb-2 text-red-900 dark:text-red-100">{recentAnnouncements.filter(a => a.type === "urgent").length}</p>
+                    <p className="text-xs text-muted-foreground font-medium">This month</p>
+                </div>
 
-                <Card className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <FileText className="h-6 w-6 text-purple-600" />
-                        <span className="text-2xl font-bold">
-                            {recentAnnouncements.filter(a => a.type === "policy").length}
-                        </span>
+                <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/30 backdrop-blur-xl border border-purple-200/50 dark:border-purple-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-purple-700 dark:text-purple-300">Policy Updates</h3>
+                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/50">
+                            <FileText className="h-7 w-7 text-white" />
+                        </div>
                     </div>
-                    <p className="text-sm font-medium">Policy Updates</p>
-                    <p className="text-xs text-muted-foreground">This month</p>
-                </Card>
+                    <p className="text-4xl font-bold mb-2 text-purple-900 dark:text-purple-100">{recentAnnouncements.filter(a => a.type === "policy").length}</p>
+                    <p className="text-xs text-muted-foreground font-medium">This month</p>
+                </div>
 
-                <Card className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <Users className="h-6 w-6 text-green-600" />
-                        <span className="text-2xl font-bold">
-                            {recentAnnouncements.filter(a => a.type === "general").length}
-                        </span>
+                <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30 backdrop-blur-xl border border-green-200/50 dark:border-green-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-green-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-green-700 dark:text-green-300">General Notices</h3>
+                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/50">
+                            <Users className="h-7 w-7 text-white" />
+                        </div>
                     </div>
-                    <p className="text-sm font-medium">General Notices</p>
-                    <p className="text-xs text-muted-foreground">This month</p>
-                </Card>
+                    <p className="text-4xl font-bold mb-2 text-green-900 dark:text-green-100">{recentAnnouncements.filter(a => a.type === "general").length}</p>
+                    <p className="text-xs text-muted-foreground font-medium">This month</p>
+                </div>
             </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Recent Announcements</h3>
+            {/* Recent Announcements */}
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Recent Announcements</h3>
                 <div className="space-y-3">
                     {recentAnnouncements.map((announcement) => (
-                        <Card
+                        <div
                             key={announcement.id}
-                            className={`p-4 ${announcement.type === 'urgent' ? 'border-2 border-red-300 bg-red-50' : ''}`}
+                            className={`p-5 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 border transition-all duration-300 hover:shadow-lg ${announcement.type === 'urgent' ? 'border-red-300 dark:border-red-700 border-2' : 'border-gray-200/50 dark:border-gray-700/50'
+                                }`}
                         >
                             {announcement.type === 'urgent' && (
-                                <div className="flex items-center gap-2 mb-3 p-2 bg-red-100 border border-red-300 rounded">
-                                    <AlertTriangle className="h-5 w-5 text-red-600" />
-                                    <span className="text-sm font-semibold text-red-800">URGENT ALERT</span>
+                                <div className="flex items-center gap-2 mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl">
+                                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 animate-pulse" />
+                                    <span className="text-sm font-bold text-red-800 dark:text-red-300">URGENT ALERT</span>
                                 </div>
                             )}
 
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="font-mono text-xs font-semibold">{announcement.id}</span>
-                                        <span className={`px-2 py-1 rounded-full text-xs border flex items-center gap-1 ${getTypeColor(announcement.type)}`}>
+                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                        <span className="font-mono text-xs font-bold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">{announcement.id}</span>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs border flex items-center gap-1 font-semibold ${getTypeColor(announcement.type)} dark:bg-opacity-30`}>
                                             {getTypeIcon(announcement.type)}
                                             {announcement.type}
                                         </span>
                                     </div>
 
-                                    <h4 className="font-semibold text-lg mb-2">{announcement.title}</h4>
-                                    <p className="text-sm mb-3">{announcement.message}</p>
+                                    <h4 className="font-bold text-lg mb-2 dark:text-white">{announcement.title}</h4>
+                                    <p className="text-sm mb-4 text-muted-foreground font-medium">{announcement.message}</p>
 
                                     <div className="grid md:grid-cols-2 gap-3 mb-3">
-                                        <div className="p-2 bg-blue-50 border border-blue-200 rounded">
-                                            <p className="text-xs font-semibold text-blue-800 mb-1">Target Hostels:</p>
-                                            <p className="text-xs text-blue-900">{announcement.targetHostels.join(", ")}</p>
+                                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+                                            <p className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-1">Target Hostels:</p>
+                                            <p className="text-xs text-blue-900 dark:text-blue-200 font-medium">{announcement.targetHostels.join(", ")}</p>
                                         </div>
-                                        <div className="p-2 bg-green-50 border border-green-200 rounded">
-                                            <p className="text-xs font-semibold text-green-800 mb-1">Target Audience:</p>
-                                            <p className="text-xs text-green-900">{announcement.targetRoles.join(", ")}</p>
+                                        <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                                            <p className="text-xs font-bold text-green-800 dark:text-green-300 mb-1">Target Audience:</p>
+                                            <p className="text-xs text-green-900 dark:text-green-200 font-medium">{announcement.targetRoles.join(", ")}</p>
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-4 text-xs text-muted-foreground">
+                                    <div className="flex gap-4 text-xs text-muted-foreground font-medium">
                                         <span>Posted: {new Date(announcement.createdAt).toLocaleString()}</span>
                                         <span>By: {announcement.createdBy}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex gap-2 pt-3 border-t">
-                                <Button variant="outline" size="sm">
+                            <div className="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                <Button variant="outline" size="sm" className="rounded-xl">
                                     Edit
                                 </Button>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" className="rounded-xl">
                                     Resend
                                 </Button>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" className="rounded-xl">
                                     View Recipients
                                 </Button>
                             </div>
-                        </Card>
+                        </div>
                     ))}
                 </div>
-            </Card>
+            </div>
         </div>
     )
 }

@@ -82,72 +82,79 @@ export default function ComplaintsReport() {
     ]
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/dean/reports">
-                        <Button variant="outline" size="icon">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold">Complaints Summary Report</h1>
-                        <p className="text-muted-foreground">Comprehensive complaints analysis and resolution tracking</p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500/10 via-amber-500/10 to-yellow-500/10 dark:from-orange-500/20 dark:via-amber-500/20 dark:to-yellow-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-orange-400/30 to-amber-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-yellow-400/30 to-orange-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link href="/dean/reports">
+                            <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl">
+                                <ArrowLeft className="h-5 w-5" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent">
+                                Complaints Summary Report 📝
+                            </h1>
+                            <p className="text-muted-foreground text-lg mt-2">Comprehensive complaints analysis and resolution tracking</p>
+                        </div>
                     </div>
+                    <Button className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg shadow-orange-500/50">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export PDF
+                    </Button>
                 </div>
-                <Button>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export PDF
-                </Button>
             </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Overall Complaints Status</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Overall Complaints Status</h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-                    <div className="p-4 border rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">Total Complaints</p>
-                        <p className="text-2xl font-bold">{overallStats.totalComplaints}</p>
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Total Complaints</p>
+                        <p className="text-3xl font-bold dark:text-white">{overallStats.totalComplaints}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-green-50">
-                        <p className="text-sm text-muted-foreground mb-1">Resolved</p>
-                        <p className="text-2xl font-bold text-green-600">{overallStats.resolved}</p>
+                    <div className="p-5 border border-green-200 dark:border-green-800 rounded-xl bg-gradient-to-br from-green-50/80 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Resolved</p>
+                        <p className="text-3xl font-bold text-green-600 dark:text-green-400">{overallStats.resolved}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-orange-50">
-                        <p className="text-sm text-muted-foreground mb-1">Pending</p>
-                        <p className="text-2xl font-bold text-orange-600">{overallStats.pending}</p>
+                    <div className="p-5 border border-orange-200 dark:border-orange-800 rounded-xl bg-gradient-to-br from-orange-50/80 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Pending</p>
+                        <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{overallStats.pending}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-primary/5">
-                        <p className="text-sm text-muted-foreground mb-1">Resolution Rate</p>
-                        <p className="text-2xl font-bold text-primary">{overallStats.resolutionRate}%</p>
+                    <div className="p-5 border border-primary/30 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Resolution Rate</p>
+                        <p className="text-3xl font-bold text-primary">{overallStats.resolutionRate}%</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-blue-50">
-                        <p className="text-sm text-muted-foreground mb-1">Avg. Resolution</p>
-                        <p className="text-2xl font-bold text-blue-600">{overallStats.avgResolutionTime}d</p>
+                    <div className="p-5 border border-blue-200 dark:border-blue-800 rounded-xl bg-gradient-to-br from-blue-50/80 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">Avg. Resolution</p>
+                        <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{overallStats.avgResolutionTime}d</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-purple-50">
-                        <p className="text-sm text-muted-foreground mb-1">This Month</p>
-                        <p className="text-2xl font-bold text-purple-600">{overallStats.thisMonth}</p>
+                    <div className="p-5 border border-purple-200 dark:border-purple-800 rounded-xl bg-gradient-to-br from-purple-50/80 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/20">
+                        <p className="text-sm text-muted-foreground mb-1 font-medium">This Month</p>
+                        <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{overallStats.thisMonth}</p>
                     </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-6">
                     <div className="flex justify-between mb-2">
-                        <span className="text-sm font-medium">Resolution Rate</span>
+                        <span className="text-sm font-semibold dark:text-white">Resolution Rate</span>
                         <span className="text-sm font-bold text-primary">{overallStats.resolutionRate}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
                         <div
-                            className="bg-green-500 h-4 rounded-full flex items-center justify-end pr-2"
+                            className="bg-gradient-to-r from-green-500 to-green-600 h-4 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
                             style={{ width: `${overallStats.resolutionRate}%` }}
                         >
                             <span className="text-xs text-white font-medium">{overallStats.resolutionRate}%</span>
                         </div>
                     </div>
                 </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Category-wise Breakdown</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Category-wise Breakdown</h3>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
@@ -197,11 +204,11 @@ export default function ComplaintsReport() {
                         </tbody>
                     </table>
                 </div>
-            </Card>
+            </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Hostel-wise Breakdown</h3>
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-xl font-bold mb-4 dark:text-white">Hostel-wise Breakdown</h3>
                     <div className="space-y-3">
                         {hostelData.map((hostel) => (
                             <div key={hostel.hostel} className="p-4 border rounded-lg">
@@ -247,10 +254,10 @@ export default function ComplaintsReport() {
                             </div>
                         ))}
                     </div>
-                </Card>
+                </div>
 
-                <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Priority-wise Distribution</h3>
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-xl font-bold mb-4 dark:text-white">Priority-wise Distribution</h3>
                     <div className="space-y-3">
                         {priorityData.map((priority) => (
                             <div key={priority.priority} className="p-4 border rounded-lg">
@@ -295,11 +302,11 @@ export default function ComplaintsReport() {
                             </div>
                         ))}
                     </div>
-                </Card>
+                </div>
             </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Monthly Trend (Last 6 Months)</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Monthly Trend (Last 6 Months)</h3>
                 <div className="space-y-3">
                     {monthlyTrend.map((month) => (
                         <div key={month.month} className="flex items-center gap-4">
@@ -328,13 +335,13 @@ export default function ComplaintsReport() {
                         </div>
                     ))}
                 </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Recent Complaints</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Recent Complaints</h3>
                 <div className="space-y-3">
                     {recentComplaints.map((complaint) => (
-                        <Card key={complaint.id} className="p-4">
+                        <div key={complaint.id} className="p-4 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 border border-gray-200/50 dark:border-gray-700/50 hover:shadow-md transition-all duration-300">
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
@@ -362,63 +369,71 @@ export default function ComplaintsReport() {
                                     </div>
                                 </div>
                             </div>
-                        </Card>
+                        </div>
                     ))}
                 </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Key Insights</h3>
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-4 dark:text-white">Key Insights</h3>
                 <div className="grid gap-4 md:grid-cols-2">
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-green-50/80 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20">
                         <div className="flex items-start gap-3">
-                            <CheckCircle className="h-5 w-5 text-green-600 mt-1" />
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/50 flex-shrink-0">
+                                <CheckCircle className="h-5 w-5 text-white" />
+                            </div>
                             <div>
-                                <p className="font-medium mb-1">High Resolution Rate</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-bold mb-1 dark:text-white">High Resolution Rate</p>
+                                <p className="text-sm text-muted-foreground font-medium">
                                     91% of complaints are resolved, indicating effective complaint management
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-blue-50/80 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20">
                         <div className="flex items-start gap-3">
-                            <Clock className="h-5 w-5 text-blue-600 mt-1" />
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50 flex-shrink-0">
+                                <Clock className="h-5 w-5 text-white" />
+                            </div>
                             <div>
-                                <p className="font-medium mb-1">Quick Response Time</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-bold mb-1 dark:text-white">Quick Response Time</p>
+                                <p className="text-sm text-muted-foreground font-medium">
                                     Average resolution time of 3.2 days shows prompt action on complaints
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-orange-50/80 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/20">
                         <div className="flex items-start gap-3">
-                            <MessageSquare className="h-5 w-5 text-orange-600 mt-1" />
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/50 flex-shrink-0">
+                                <MessageSquare className="h-5 w-5 text-white" />
+                            </div>
                             <div>
-                                <p className="font-medium mb-1">Top Category</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-bold mb-1 dark:text-white">Top Category</p>
+                                <p className="text-sm text-muted-foreground font-medium">
                                     Maintenance complaints are the most common (45 total), requiring focused attention
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-purple-50/80 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/20">
                         <div className="flex items-start gap-3">
-                            <TrendingUp className="h-5 w-5 text-purple-600 mt-1" />
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/50 flex-shrink-0">
+                                <TrendingUp className="h-5 w-5 text-white" />
+                            </div>
                             <div>
-                                <p className="font-medium mb-1">Critical Priority</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-bold mb-1 dark:text-white">Critical Priority</p>
+                                <p className="text-sm text-muted-foreground font-medium">
                                     All 8 critical complaints resolved with average time of 0.5 days - excellent performance
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </Card>
+            </div>
         </div>
     )
 }

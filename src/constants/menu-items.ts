@@ -76,25 +76,6 @@ export const adminMenuItems = [
         url: "/admin/notifications",
         icon: "Bell",
     },
-    {
-        title: "Analytics",
-        url: "/admin/analytics",
-        icon: "BarChart3",
-    },
-    {
-        title: "System",
-        icon: "Settings",
-        items: [
-            {
-                title: "Backup & Restore",
-                url: "/admin/system/backup",
-            },
-            {
-                title: "Document Archives",
-                url: "/admin/system/documents",
-            },
-        ],
-    },
 ]
 
 export const studentMenuItems = [
@@ -228,11 +209,6 @@ export const wardenMenuItems = [
         url: "/warden/inventory",
         icon: "Package",
     },
-    {
-        title: "Messages",
-        url: "/warden/messages",
-        icon: "MessageSquare",
-    },
 ]
 
 export const deanMenuItems = [
@@ -304,11 +280,6 @@ export const deanMenuItems = [
         url: "/dean/announcements",
         icon: "Megaphone",
     },
-    {
-        title: "Feedback & Comments",
-        url: "/dean/feedback",
-        icon: "MessageCircle",
-    },
 ]
 
 export const caretakerMenuItems = [
@@ -319,29 +290,8 @@ export const caretakerMenuItems = [
     },
     {
         title: "Room Management",
+        url: "/caretaker/room-management",
         icon: "DoorOpen",
-        items: [
-            {
-                title: "Add Room",
-                url: "/caretaker/room-management/add",
-            },
-            {
-                title: "Modify Room",
-                url: "/caretaker/room-management/modify",
-            },
-            {
-                title: "Remove Room",
-                url: "/caretaker/room-management/remove",
-            },
-            {
-                title: "View Rooms",
-                url: "/caretaker/room-management/view",
-            },
-            {
-                title: "Room Capacity",
-                url: "/caretaker/room-management/capacity",
-            },
-        ],
     },
     {
         title: "Room Allotment",

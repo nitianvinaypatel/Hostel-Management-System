@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Star, TrendingUp, TrendingDown } from "lucide-react"
+import { Search, Star, TrendingUp, TrendingDown, Utensils } from "lucide-react"
 
 export default function MessFeedback() {
     const [searchTerm, setSearchTerm] = useState("")
@@ -89,88 +88,119 @@ export default function MessFeedback() {
     }
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Mess Quality Feedback</h1>
-                <p className="text-muted-foreground">Monitor and analyze student feedback on mess food</p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header Banner */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-yellow-500/10 dark:from-amber-500/20 dark:via-orange-500/20 dark:to-yellow-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-amber-400/30 to-orange-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-yellow-400/30 to-amber-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent mb-2">
+                        Mess Quality Feedback 🍽️
+                    </h1>
+                    <p className="text-muted-foreground text-lg">Monitor and analyze student feedback on mess food</p>
+                </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="p-6">
-                    <p className="text-sm text-muted-foreground mb-2">Overall Rating</p>
-                    <div className="flex items-center gap-2">
-                        <p className="text-3xl font-bold">{overallStats.averageRating}</p>
-                        <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+            {/* Stats Grid */}
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+                <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/50 dark:to-amber-900/30 backdrop-blur-xl border border-amber-200/50 dark:border-amber-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-amber-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/50 dark:to-amber-900/30" />
+                    <div className="relative">
+                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Overall Rating</p>
+                        <div className="flex items-center gap-2 mb-2">
+                            <p className="text-4xl font-bold text-amber-900 dark:text-amber-100">{overallStats.averageRating}</p>
+                            <Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />
+                        </div>
+                        <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                            {overallStats.trend} from last week
+                        </p>
                     </div>
-                    <p className="text-sm text-green-600 mt-1">
-                        {overallStats.trend} from last week
-                    </p>
-                </Card>
+                </div>
 
-                <Card className="p-6">
-                    <p className="text-sm text-muted-foreground mb-2">Quality</p>
-                    <div className="flex items-center gap-2">
-                        <p className="text-3xl font-bold">{overallStats.qualityAvg}</p>
-                        <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 backdrop-blur-xl border border-blue-200/50 dark:border-blue-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30" />
+                    <div className="relative">
+                        <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Quality</p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">{overallStats.qualityAvg}</p>
+                            <Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />
+                        </div>
                     </div>
-                </Card>
+                </div>
 
-                <Card className="p-6">
-                    <p className="text-sm text-muted-foreground mb-2">Quantity</p>
-                    <div className="flex items-center gap-2">
-                        <p className="text-3xl font-bold">{overallStats.quantityAvg}</p>
-                        <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30 backdrop-blur-xl border border-green-200/50 dark:border-green-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-green-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30" />
+                    <div className="relative">
+                        <p className="text-sm font-semibold text-green-700 dark:text-green-300 mb-2">Quantity</p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-4xl font-bold text-green-900 dark:text-green-100">{overallStats.quantityAvg}</p>
+                            <Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />
+                        </div>
                     </div>
-                </Card>
+                </div>
 
-                <Card className="p-6">
-                    <p className="text-sm text-muted-foreground mb-2">Taste</p>
-                    <div className="flex items-center gap-2">
-                        <p className="text-3xl font-bold">{overallStats.tasteAvg}</p>
-                        <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/30 backdrop-blur-xl border border-purple-200/50 dark:border-purple-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/30" />
+                    <div className="relative">
+                        <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">Taste</p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-4xl font-bold text-purple-900 dark:text-purple-100">{overallStats.tasteAvg}</p>
+                            <Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />
+                        </div>
                     </div>
-                </Card>
+                </div>
             </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Meal-wise Ratings</h3>
+            {/* Meal-wise Ratings */}
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <h3 className="text-xl font-bold mb-5 flex items-center gap-3 dark:text-white">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/50">
+                        <Utensils className="h-5 w-5 text-white" />
+                    </div>
+                    <span>Meal-wise Ratings</span>
+                </h3>
                 <div className="grid md:grid-cols-3 gap-4">
                     {mealStats.map((meal) => (
-                        <div key={meal.meal} className="p-4 border rounded-lg">
-                            <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-semibold">{meal.meal}</h4>
+                        <div key={meal.meal} className="group p-5 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-gray-200/50 dark:border-gray-700/50 hover:border-primary/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
+                            <div className="flex justify-between items-start mb-3">
+                                <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">{meal.meal}</h4>
                                 {meal.trend === 'up' ? (
-                                    <TrendingUp className="h-4 w-4 text-green-600" />
+                                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md shadow-green-500/50">
+                                        <TrendingUp className="h-4 w-4 text-white" />
+                                    </div>
                                 ) : (
-                                    <TrendingDown className="h-4 w-4 text-red-600" />
+                                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-md shadow-red-500/50">
+                                        <TrendingDown className="h-4 w-4 text-white" />
+                                    </div>
                                 )}
                             </div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <p className="text-2xl font-bold">{meal.rating}</p>
-                                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                            <div className="flex items-center gap-2 mb-2">
+                                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{meal.rating}</p>
+                                <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
                             </div>
-                            <p className="text-sm text-muted-foreground">{meal.feedback} responses</p>
+                            <p className="text-sm text-muted-foreground font-medium">{meal.feedback} responses</p>
                         </div>
                     ))}
                 </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Recent Feedback</h3>
-                <div className="flex gap-4 mb-6">
+            {/* Recent Feedback */}
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <h3 className="text-xl font-bold mb-5 dark:text-white">Recent Feedback</h3>
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="flex-1 relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Search feedback..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 bg-white dark:bg-gray-800"
                         />
                     </div>
                     <select
                         value={filterMeal}
                         onChange={(e) => setFilterMeal(e.target.value)}
-                        className="px-4 py-2 border rounded-md"
+                        className="px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 font-medium"
                     >
                         <option value="all">All Meals</option>
                         <option value="breakfast">Breakfast</option>
@@ -181,45 +211,45 @@ export default function MessFeedback() {
 
                 <div className="space-y-4">
                     {filteredFeedback.map((feedback) => (
-                        <Card key={feedback.id} className="p-4">
-                            <div className="flex justify-between items-start mb-3">
+                        <div key={feedback.id} className="group p-5 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-gray-200/50 dark:border-gray-700/50 hover:border-primary/30 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
+                            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3 mb-4">
                                 <div>
-                                    <h4 className="font-semibold">{feedback.studentName}</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        {new Date(feedback.date).toLocaleDateString()} • {feedback.mealType}
+                                    <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">{feedback.studentName}</h4>
+                                    <p className="text-sm text-muted-foreground font-medium">
+                                        {new Date(feedback.date).toLocaleDateString()} • <span className="capitalize">{feedback.mealType}</span>
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-700">
                                     {renderStars(feedback.rating)}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-3 mb-3 text-sm">
+                            <div className="grid grid-cols-3 gap-3 mb-4 p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
                                 <div>
-                                    <p className="text-muted-foreground">Quality</p>
+                                    <p className="text-xs text-muted-foreground font-semibold mb-1">Quality</p>
                                     <div className="flex items-center gap-1">
                                         {renderStars(feedback.qualityRating)}
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-muted-foreground">Quantity</p>
+                                    <p className="text-xs text-muted-foreground font-semibold mb-1">Quantity</p>
                                     <div className="flex items-center gap-1">
                                         {renderStars(feedback.quantityRating)}
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-muted-foreground">Taste</p>
+                                    <p className="text-xs text-muted-foreground font-semibold mb-1">Taste</p>
                                     <div className="flex items-center gap-1">
                                         {renderStars(feedback.tasteRating)}
                                     </div>
                                 </div>
                             </div>
 
-                            <p className="text-sm">{feedback.comments}</p>
-                        </Card>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 italic">"{feedback.comments}"</p>
+                        </div>
                     ))}
                 </div>
-            </Card>
+            </div>
         </div>
     )
 }

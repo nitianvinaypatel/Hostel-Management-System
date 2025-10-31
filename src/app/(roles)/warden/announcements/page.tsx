@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Send, Megaphone, AlertTriangle } from "lucide-react"
+import { Send, Megaphone, AlertTriangle, Users, Clock, Bell } from "lucide-react"
 
 export default function WardenAnnouncements() {
     const [formData, setFormData] = useState({
@@ -61,118 +60,138 @@ export default function WardenAnnouncements() {
     }
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Announcements</h1>
-                <p className="text-muted-foreground">Send announcements and circulars to students</p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header Banner */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500/10 via-amber-500/10 to-yellow-500/10 dark:from-orange-500/20 dark:via-amber-500/20 dark:to-yellow-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-orange-400/30 to-amber-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-yellow-400/30 to-orange-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent mb-2">
+                        Announcements 📢
+                    </h1>
+                    <p className="text-muted-foreground text-lg">Send announcements and circulars to students</p>
+                </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <Card className="p-6">
+                {/* Send New Announcement */}
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Send className="h-5 w-5 text-primary" />
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/50">
+                            <Send className="h-5 w-5 text-white" />
                         </div>
-                        <h2 className="text-xl font-semibold">Send New Announcement</h2>
+                        <h2 className="text-xl font-bold dark:text-white">Send New Announcement</h2>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
-                            <Label htmlFor="title">Title</Label>
+                            <Label htmlFor="title" className="text-sm font-semibold text-gray-900 dark:text-gray-100">Title</Label>
                             <Input
                                 id="title"
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 placeholder="Announcement title"
+                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="message">Message</Label>
+                            <Label htmlFor="message" className="text-sm font-semibold text-gray-900 dark:text-gray-100">Message</Label>
                             <textarea
                                 id="message"
                                 value={formData.message}
                                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                 placeholder="Announcement message"
-                                className="w-full px-3 py-2 border rounded-md min-h-[120px]"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg min-h-[120px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                                 required
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="type">Type</Label>
-                            <select
-                                id="type"
-                                value={formData.type}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                className="w-full px-3 py-2 border rounded-md"
-                            >
-                                <option value="general">General</option>
-                                <option value="urgent">Urgent</option>
-                                <option value="event">Event</option>
-                                <option value="policy">Policy</option>
-                            </select>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="type" className="text-sm font-semibold text-gray-900 dark:text-gray-100">Type</Label>
+                                <select
+                                    id="type"
+                                    value={formData.type}
+                                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium focus:ring-2 focus:ring-primary focus:border-transparent"
+                                >
+                                    <option value="general">General</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="event">Event</option>
+                                    <option value="policy">Policy</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="targetAudience" className="text-sm font-semibold text-gray-900 dark:text-gray-100">Target Audience</Label>
+                                <select
+                                    id="targetAudience"
+                                    value={formData.targetAudience}
+                                    onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium focus:ring-2 focus:ring-primary focus:border-transparent"
+                                >
+                                    <option value="students">Students Only</option>
+                                    <option value="caretakers">Caretakers Only</option>
+                                    <option value="all">All (Students + Caretakers)</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="targetAudience">Target Audience</Label>
-                            <select
-                                id="targetAudience"
-                                value={formData.targetAudience}
-                                onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
-                                className="w-full px-3 py-2 border rounded-md"
-                            >
-                                <option value="students">Students Only</option>
-                                <option value="caretakers">Caretakers Only</option>
-                                <option value="all">All (Students + Caretakers)</option>
-                            </select>
-                        </div>
-
-                        <Button type="submit" className="w-full">
+                        <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/50">
                             <Send className="h-4 w-4 mr-2" />
                             Send Announcement
                         </Button>
                     </form>
-                </Card>
+                </div>
 
-                <Card className="p-6">
+                {/* Recent Announcements */}
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Megaphone className="h-5 w-5 text-primary" />
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/50">
+                            <Megaphone className="h-5 w-5 text-white" />
                         </div>
-                        <h2 className="text-xl font-semibold">Recent Announcements</h2>
+                        <h2 className="text-xl font-bold dark:text-white">Recent Announcements</h2>
                     </div>
 
-                    <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                    <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
                         {recentAnnouncements.map((announcement) => (
-                            <Card key={announcement.id} className="p-4">
-                                <div className="flex items-start gap-3">
+                            <div key={announcement.id} className={`group p-5 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${announcement.type === 'urgent' ? 'border-red-300 dark:border-red-700 border-2' : 'border-gray-200/50 dark:border-gray-700/50 hover:border-primary/30'}`}>
+                                <div className="flex items-start gap-4">
                                     {announcement.type === 'urgent' && (
-                                        <AlertTriangle className="h-5 w-5 text-red-600 mt-1" />
+                                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/50 animate-pulse flex-shrink-0">
+                                            <AlertTriangle className="h-5 w-5 text-white" />
+                                        </div>
                                     )}
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-semibold">{announcement.title}</h3>
-                                            <span className={`px-2 py-0.5 rounded-full text-xs ${announcement.type === 'urgent' ? 'bg-red-100 text-red-800' :
-                                                announcement.type === 'event' ? 'bg-blue-100 text-blue-800' :
-                                                    announcement.type === 'policy' ? 'bg-purple-100 text-purple-800' :
-                                                        'bg-green-100 text-green-800'
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">{announcement.title}</h3>
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${announcement.type === 'urgent' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700' :
+                                                announcement.type === 'event' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-700' :
+                                                    announcement.type === 'policy' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-700' :
+                                                        'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700'
                                                 }`}>
                                                 {announcement.type}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-muted-foreground mb-2">{announcement.message}</p>
-                                        <div className="flex justify-between text-xs text-muted-foreground">
-                                            <span>To: {announcement.targetAudience}</span>
-                                            <span>{new Date(announcement.sentAt).toLocaleString()}</span>
+                                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-3 font-medium">{announcement.message}</p>
+                                        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground font-medium">
+                                            <span className="flex items-center gap-1">
+                                                <Users className="h-3 w-3" />
+                                                To: <span className="capitalize">{announcement.targetAudience}</span>
+                                            </span>
+                                            <span className="flex items-center gap-1">
+                                                <Clock className="h-3 w-3" />
+                                                {new Date(announcement.sentAt).toLocaleString()}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                            </Card>
+                            </div>
                         ))}
                     </div>
-                </Card>
+                </div>
             </div>
         </div>
     )

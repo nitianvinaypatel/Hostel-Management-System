@@ -1,8 +1,7 @@
 'use client'
 
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit, Plus } from "lucide-react"
+import { Edit, Plus, Utensils, Clock } from "lucide-react"
 
 export default function MessMenu() {
     const weeklyMenu = [
@@ -51,76 +50,111 @@ export default function MessMenu() {
     ]
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold">Mess Menu</h1>
-                    <p className="text-muted-foreground">Weekly meal schedule for Hostel A</p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header Banner */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 dark:from-green-500/20 dark:via-emerald-500/20 dark:to-teal-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-teal-400/30 to-green-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="relative flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent mb-2">
+                            Mess Menu 🍛
+                        </h1>
+                        <p className="text-muted-foreground text-lg">Weekly meal schedule for Hostel A</p>
+                    </div>
+                    <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg shadow-green-500/50">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Update Menu
+                    </Button>
                 </div>
-                <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Update Menu
-                </Button>
             </div>
 
-            <div className="grid gap-4">
+            {/* Weekly Menu */}
+            <div className="grid gap-5">
                 {weeklyMenu.map((day) => (
-                    <Card key={day.day} className="p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-xl font-semibold">{day.day}</h3>
-                            <Button variant="outline" size="sm">
+                    <div key={day.day} className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+                            <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">{day.day}</h3>
+                            <Button variant="outline" size="sm" className="w-full md:w-auto">
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                             </Button>
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-4">
-                            <div className="p-4 border rounded-lg">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h4 className="font-semibold text-orange-600">Breakfast</h4>
-                                    <span className="text-xs text-muted-foreground">{day.breakfast.time}</span>
+                            {/* Breakfast */}
+                            <div className="group p-5 rounded-xl bg-gradient-to-br from-orange-50/80 to-amber-50/80 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200/50 dark:border-orange-800/50 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/50">
+                                            <Utensils className="h-4 w-4 text-white" />
+                                        </div>
+                                        <h4 className="font-bold text-orange-700 dark:text-orange-300">Breakfast</h4>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium bg-white/50 dark:bg-gray-800/50 px-2 py-1 rounded-lg">
+                                        <Clock className="h-3 w-3" />
+                                        {day.breakfast.time}
+                                    </div>
                                 </div>
-                                <ul className="space-y-1">
+                                <ul className="space-y-2">
                                     {day.breakfast.items.map((item, index) => (
-                                        <li key={index} className="text-sm flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-600"></span>
+                                        <li key={index} className="text-sm flex items-center gap-2 font-medium text-gray-700 dark:text-gray-300">
+                                            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-sm"></span>
                                             {item}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
 
-                            <div className="p-4 border rounded-lg">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h4 className="font-semibold text-green-600">Lunch</h4>
-                                    <span className="text-xs text-muted-foreground">{day.lunch.time}</span>
+                            {/* Lunch */}
+                            <div className="group p-5 rounded-xl bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200/50 dark:border-green-800/50 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md shadow-green-500/50">
+                                            <Utensils className="h-4 w-4 text-white" />
+                                        </div>
+                                        <h4 className="font-bold text-green-700 dark:text-green-300">Lunch</h4>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium bg-white/50 dark:bg-gray-800/50 px-2 py-1 rounded-lg">
+                                        <Clock className="h-3 w-3" />
+                                        {day.lunch.time}
+                                    </div>
                                 </div>
-                                <ul className="space-y-1">
+                                <ul className="space-y-2">
                                     {day.lunch.items.map((item, index) => (
-                                        <li key={index} className="text-sm flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                                        <li key={index} className="text-sm flex items-center gap-2 font-medium text-gray-700 dark:text-gray-300">
+                                            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 shadow-sm"></span>
                                             {item}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
 
-                            <div className="p-4 border rounded-lg">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h4 className="font-semibold text-blue-600">Dinner</h4>
-                                    <span className="text-xs text-muted-foreground">{day.dinner.time}</span>
+                            {/* Dinner */}
+                            <div className="group p-5 rounded-xl bg-gradient-to-br from-blue-50/80 to-cyan-50/80 dark:from-blue-950/30 dark:to-cyan-950/30 border border-blue-200/50 dark:border-blue-800/50 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md shadow-blue-500/50">
+                                            <Utensils className="h-4 w-4 text-white" />
+                                        </div>
+                                        <h4 className="font-bold text-blue-700 dark:text-blue-300">Dinner</h4>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium bg-white/50 dark:bg-gray-800/50 px-2 py-1 rounded-lg">
+                                        <Clock className="h-3 w-3" />
+                                        {day.dinner.time}
+                                    </div>
                                 </div>
-                                <ul className="space-y-1">
+                                <ul className="space-y-2">
                                     {day.dinner.items.map((item, index) => (
-                                        <li key={index} className="text-sm flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                                        <li key={index} className="text-sm flex items-center gap-2 font-medium text-gray-700 dark:text-gray-300">
+                                            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 shadow-sm"></span>
                                             {item}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
                         </div>
-                    </Card>
+                    </div>
                 ))}
             </div>
         </div>
