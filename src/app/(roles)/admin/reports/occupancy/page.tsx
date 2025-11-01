@@ -1,19 +1,76 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { Download, ArrowLeft, Building2, Users, DoorOpen } from "lucide-react"
+import { Download, ArrowLeft, Building2, Users, DoorOpen, Loader2, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { useGetOccupancyReportQuery } from '@/store/api/adminApi'
+import { toast } from "sonner"
 
 export default function OccupancyReport() {
-    const occupancyData = [
-        { hostel: "Hostel A - Boys", totalRooms: 120, occupiedRooms: 105, capacity: 240, occupied: 210, rate: 87.5 },
-        { hostel: "Hostel B - Girls", totalRooms: 100, occupiedRooms: 85, capacity: 200, occupied: 170, rate: 85.0 },
-        { hostel: "Hostel C - Boys", totalRooms: 80, occupiedRooms: 60, capacity: 160, occupied: 120, rate: 75.0 },
-    ]
+    const { data: response, isLoading, error, refetch } = useGetOccupancyReportQuery()
 
-    const totalCapacity = occupancyData.reduce((sum, h) => sum + h.capacity, 0)
-    const totalOccupied = occupancyData.reduce((sum, h) => sum + h.occupied, 0)
-    const overallRate = ((totalOccupied / totalCapacity) * 100).toFixed(1)
+    const handleExport = async (format: 'pdf' | 'excel' = 'pdf') => {
+        try {
+            toast.success(`Exporting Occupancy Report as ${format.toUpperCase()}...`)
+
+            // Make direct fetch call to download the file
+            const token = localStorage.getItem('token') // Adjust based on your auth implementation
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+
+            const response = await fetch(
+                `${baseUrl}/admin/reports/export?reportType=occupancy&format=${format}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            )
+
+            if (!response.ok) throw new Error('Export failed')
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `occupancy-report.${format === 'pdf' ? 'pdf' : 'xlsx'}`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success('Report exported successfully!')
+        } catch (error) {
+            console.error('Export error:', error)
+            toast.error('Failed to export report')
+        }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-96 space-y-4">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-xl opacity-50 animate-pulse"></div>
+                    <Loader2 className="relative h-12 w-12 animate-spin text-primary" />
+                </div>
+                <p className="text-muted-foreground animate-pulse">Loading occupancy report...</p>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-96 space-y-4">
+                <AlertCircle className="h-12 w-12 text-destructive" />
+                <p className="text-lg text-muted-foreground">Failed to load occupancy report</p>
+                <Button onClick={() => refetch()}>Retry</Button>
+            </div>
+        )
+    }
+
+    const reportData = response?.data
+    if (!reportData) return null
+
+    const { summary, hostels } = reportData
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -30,12 +87,15 @@ export default function OccupancyReport() {
                         </Link>
                         <div>
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent mb-2">
-                                Hostel Occupancy Report 🏠
+                                Hostel Occupancy Report
                             </h1>
                             <p className="text-muted-foreground text-lg">Current occupancy status across all hostels</p>
                         </div>
                     </div>
-                    <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/50">
+                    <Button
+                        onClick={() => handleExport('pdf')}
+                        className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/50"
+                    >
                         <Download className="h-4 w-4 mr-2" />
                         Export PDF
                     </Button>
@@ -51,7 +111,7 @@ export default function OccupancyReport() {
                         </div>
                         <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total Capacity</p>
                     </div>
-                    <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">{totalCapacity}</p>
+                    <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">{summary.totalCapacity}</p>
                 </div>
                 <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30 backdrop-blur-xl border border-green-200/50 dark:border-green-800/50 rounded-2xl p-6 hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center gap-3 mb-3">
@@ -60,7 +120,7 @@ export default function OccupancyReport() {
                         </div>
                         <p className="text-sm font-semibold text-green-700 dark:text-green-300">Currently Occupied</p>
                     </div>
-                    <p className="text-4xl font-bold text-green-900 dark:text-green-100">{totalOccupied}</p>
+                    <p className="text-4xl font-bold text-green-900 dark:text-green-100">{summary.totalOccupied}</p>
                 </div>
                 <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/30 backdrop-blur-xl border border-purple-200/50 dark:border-purple-800/50 rounded-2xl p-6 hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center gap-3 mb-3">
@@ -69,11 +129,11 @@ export default function OccupancyReport() {
                         </div>
                         <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">Overall Occupancy Rate</p>
                     </div>
-                    <p className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-2">{overallRate}%</p>
+                    <p className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-2">{summary.overallRate.toFixed(1)}%</p>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                         <div
                             className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
-                            style={{ width: `${overallRate}%` }}
+                            style={{ width: `${summary.overallRate}%` }}
                         />
                     </div>
                 </div>
@@ -96,14 +156,14 @@ export default function OccupancyReport() {
                             </tr>
                         </thead>
                         <tbody>
-                            {occupancyData.map((hostel) => (
+                            {hostels.map((hostel) => (
                                 <tr key={hostel.hostel} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td className="py-4 px-4 font-bold text-gray-900 dark:text-gray-100">{hostel.hostel}</td>
                                     <td className="py-4 px-4 font-medium">{hostel.totalRooms}</td>
                                     <td className="py-4 px-4 font-medium">{hostel.occupiedRooms}</td>
                                     <td className="py-4 px-4 font-medium">{hostel.capacity}</td>
                                     <td className="py-4 px-4 font-medium">{hostel.occupied}</td>
-                                    <td className="py-4 px-4 font-bold text-primary">{hostel.rate}%</td>
+                                    <td className="py-4 px-4 font-bold text-primary">{hostel.rate.toFixed(1)}%</td>
                                     <td className="py-4 px-4">
                                         <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                                             <div

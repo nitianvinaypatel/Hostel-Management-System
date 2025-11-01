@@ -72,6 +72,11 @@ const roleConfig = {
 export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.ComponentProps<typeof Sidebar>) {
     const pathname = usePathname()
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.student
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const getIcon = (iconName: string): React.ComponentType => {
         const Icon = LucideIcons[iconName as keyof typeof LucideIcons] as React.ComponentType | undefined
@@ -115,12 +120,12 @@ export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.Co
                                 const isAnySubItemActive = item.items.some(subItem => pathname === subItem.url)
 
                                 return (
-                                    <Collapsible key={item.title} asChild defaultOpen={isAnySubItemActive} className="group/collapsible">
+                                    <Collapsible key={item.title} asChild defaultOpen={mounted && isAnySubItemActive} className="group/collapsible">
                                         <SidebarMenuItem>
                                             <CollapsibleTrigger asChild>
                                                 <SidebarMenuButton
                                                     tooltip={item.title}
-                                                    className={isAnySubItemActive ? "bg-gradient-to-r from-primary/20 to-primary/10 font-semibold" : "hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 transition-all duration-300"}
+                                                    className={isAnySubItemActive ? "bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 font-semibold" : "hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 transition-all duration-300"}
                                                 >
                                                     <Icon />
                                                     <span>{item.title}</span>
@@ -136,7 +141,7 @@ export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.Co
                                                                 <SidebarMenuSubButton
                                                                     asChild
                                                                     isActive={isActive}
-                                                                    className={isActive ? "bg-gradient-to-r from-primary/15 to-primary/5 border-l-2 border-primary font-semibold" : "hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 transition-all duration-300"}
+                                                                    className={isActive ? "bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-l-2 border-green-500 font-semibold" : "hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 transition-all duration-300"}
                                                                 >
                                                                     <Link href={subItem.url}>
                                                                         <span>{subItem.title}</span>
@@ -160,7 +165,7 @@ export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.Co
                                         asChild
                                         isActive={isActive}
                                         tooltip={item.title}
-                                        className={isActive ? "bg-gradient-to-r from-primary/20 to-primary/10 border-l-4 border-primary font-semibold shadow-sm" : "hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 transition-all duration-300"}
+                                        className={isActive ? "bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-l-4 border-green-500 font-semibold shadow-sm" : "hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 transition-all duration-300"}
                                     >
                                         <Link href={item.url!}>
                                             <Icon />

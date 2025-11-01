@@ -80,7 +80,19 @@ export function LoginForm({
       }
     } catch (err: any) {
       console.error("Login failed:", err);
-      setError(err?.data?.message || err?.message || "Invalid email or password");
+
+      // Handle different error types
+      if (err?.status === 'FETCH_ERROR') {
+        setError("Cannot connect to server. Please ensure the backend is running on http://localhost:5000");
+      } else if (err?.status === 401) {
+        setError("Invalid email or password");
+      } else if (err?.data?.message) {
+        setError(err.data.message);
+      } else if (err?.message) {
+        setError(err.message);
+      } else {
+        setError("Login failed. Please check your connection and try again.");
+      }
     }
   };
 

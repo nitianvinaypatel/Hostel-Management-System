@@ -1,61 +1,147 @@
 'use client'
 
-import { useState, useEffect } from "react"
-import { Card } from "@/components/ui/card"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Plus, Edit, Trash2, UserCheck, UserX, Loader2, AlertCircle } from "lucide-react"
+import { Plus, Loader2, AlertCircle, Edit, Trash2, Search, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { adminService } from "@/services/admin.service"
-import type { UserManagement } from "@/types/admin"
-import { formatDate } from "@/utils/formatDate"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import {
+    useGetAllUsersQuery,
+    useCreateUserMutation,
+    useUpdateUserMutation,
+    useToggleUserStatusMutation,
+    useDeleteUserMutation
+} from '@/store/api/adminApi'
+import { createColumns, User } from "./columns"
+import { DataTable } from "./data-table"
+import { toast } from "sonner"
 
 export default function AdminUsers() {
-    const [searchTerm, setSearchTerm] = useState("")
-    const [filterRole, setFilterRole] = useState("all")
-    const [users, setUsers] = useState<UserManagement[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [pagination, setPagination] = useState({ total: 0, page: 1, pages: 1 })
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [editDialogOpen, setEditDialogOpen] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [selectedUser, setSelectedUser] = useState<User | null>(null)
+    const [globalFilter, setGlobalFilter] = useState("")
 
-    useEffect(() => {
-        loadUsers()
-    }, [filterRole, pagination.page])
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+        role: "student" as "student" | "caretaker" | "warden" | "dean" | "admin",
+        hostelId: ""
+    })
 
-    const loadUsers = async () => {
+    const [editFormData, setEditFormData] = useState({
+        name: "",
+        phone: "",
+        hostelId: ""
+    })
+
+    // Redux API hooks
+    const { data: response, isLoading, error, refetch } = useGetAllUsersQuery({
+        page: 1,
+        limit: 1000 // Get all for client-side pagination
+    })
+
+    const [createUser, { isLoading: isCreating }] = useCreateUserMutation()
+    const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation()
+    const [toggleStatus] = useToggleUserStatusMutation()
+    const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation()
+
+    const users = response?.data || []
+
+    const handleAddUser = async (e: React.FormEvent) => {
+        e.preventDefault()
+
         try {
-            setLoading(true)
-            setError(null)
-            const response = await adminService.getUsers({
-                role: filterRole === "all" ? undefined : filterRole,
-                page: pagination.page,
-                limit: 20,
-                search: searchTerm
+            await createUser(formData).unwrap()
+            toast.success('User created successfully!')
+            setDialogOpen(false)
+            setFormData({
+                name: "",
+                email: "",
+                password: "",
+                phone: "",
+                role: "student",
+                hostelId: ""
             })
-            setUsers(response.data)
-            if (response.pagination) {
-                setPagination(response.pagination)
-            }
-        } catch (err) {
-            setError('Failed to load users')
-            console.error('Users error:', err)
-        } finally {
-            setLoading(false)
+        } catch (err: any) {
+            toast.error(err?.data?.message || 'Failed to create user')
         }
     }
 
-    const handleSearch = () => {
-        setPagination({ ...pagination, page: 1 })
-        loadUsers()
+    const handleEditClick = (user: User) => {
+        setSelectedUser(user)
+        setEditFormData({
+            name: user.name,
+            phone: user.phone || user.phoneNumber || "",
+            hostelId: ""
+        })
+        setEditDialogOpen(true)
     }
 
-    const filteredUsers = users.filter(user => {
-        if (!searchTerm) return true
-        return user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const handleEditUser = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!selectedUser) return
+
+        try {
+            await updateUser({
+                userId: selectedUser._id,
+                data: editFormData
+            }).unwrap()
+            toast.success('User updated successfully!')
+            setEditDialogOpen(false)
+            setSelectedUser(null)
+        } catch (err: any) {
+            toast.error(err?.data?.message || 'Failed to update user')
+        }
+    }
+
+    const handleToggleStatus = async (user: User) => {
+        try {
+            await toggleStatus(user._id).unwrap()
+            toast.success(`User ${user.isActive ? 'deactivated' : 'activated'} successfully!`)
+        } catch (err: any) {
+            toast.error(err?.data?.message || 'Failed to toggle user status')
+        }
+    }
+
+    const handleDeleteClick = (user: User) => {
+        setSelectedUser(user)
+        setDeleteDialogOpen(true)
+    }
+
+    const handleDeleteUser = async () => {
+        if (!selectedUser) return
+
+        try {
+            await deleteUser(selectedUser._id).unwrap()
+            toast.success('User deleted successfully!')
+            setDeleteDialogOpen(false)
+            setSelectedUser(null)
+        } catch (err: any) {
+            toast.error(err?.data?.message || 'Failed to delete user')
+        }
+    }
+
+    const columns = createColumns({
+        onEdit: handleEditClick,
+        onDelete: handleDeleteClick,
+        onToggleStatus: handleToggleStatus
     })
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-96">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -67,8 +153,8 @@ export default function AdminUsers() {
         return (
             <div className="flex flex-col items-center justify-center h-96 space-y-4">
                 <AlertCircle className="h-12 w-12 text-destructive" />
-                <p className="text-lg text-muted-foreground">{error}</p>
-                <Button onClick={loadUsers}>Retry</Button>
+                <p className="text-lg text-muted-foreground">Failed to load users</p>
+                <Button onClick={() => refetch()}>Retry</Button>
             </div>
         )
     }
@@ -79,155 +165,275 @@ export default function AdminUsers() {
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 dark:from-blue-500/20 dark:via-purple-500/20 dark:to-pink-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-blue-400/30 to-purple-400/30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-pink-400/30 to-orange-400/30 rounded-full blur-3xl animate-pulse" />
-                <div className="relative flex items-center justify-between">
-                    <div className="space-y-2">
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-                            User Management 👥
-                        </h1>
-                        <p className="text-muted-foreground text-lg">
-                            Manage all system users ({pagination.total} total)
-                        </p>
-                    </div>
-                    <Link href="/admin/users/add">
-                        <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add User
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-
-            {/* Search and Filter */}
-            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
-                        <Input
-                            placeholder="Search users by name or email..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            className="pl-10 bg-white/80 dark:bg-gray-800/80 border-gray-300/50 dark:border-gray-700/50 placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                        />
-                    </div>
-                    <Button onClick={handleSearch} className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-md">
-                        <Search className="h-4 w-4 mr-2" />
-                        Search
-                    </Button>
-                    <select
-                        value={filterRole}
-                        onChange={(e) => setFilterRole(e.target.value)}
-                        className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-300/50 dark:border-gray-700/50 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    >
-                        <option value="all">All Roles</option>
-                        <option value="student">Students</option>
-                        <option value="caretaker">Caretakers</option>
-                        <option value="warden">Wardens</option>
-                        <option value="dean">Deans</option>
-                        <option value="admin">Admins</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* Users Table */}
-            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl shadow-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 border-b border-gray-200/50 dark:border-gray-700/50">
-                                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">Name</th>
-                                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">Email</th>
-                                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">Phone</th>
-                                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">Role</th>
-                                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
-                                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">Last Login</th>
-                                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsers.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="py-12 text-center">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <AlertCircle className="h-12 w-12 text-muted-foreground opacity-20" />
-                                            <p className="text-muted-foreground">No users found</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredUsers.map((user) => (
-                                    <tr key={user._id} className="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-purple-50/50 dark:hover:from-blue-950/30 dark:hover:to-purple-950/30 transition-all duration-200">
-                                        <td className="py-4 px-6 font-semibold text-gray-900 dark:text-gray-100">{user.name}</td>
-                                        <td className="py-4 px-6 text-sm text-muted-foreground">{user.email}</td>
-                                        <td className="py-4 px-6 text-sm text-muted-foreground">{user.phone || user.phoneNumber || '-'}</td>
-                                        <td className="py-4 px-6">
-                                            <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/50 capitalize">
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="py-4 px-6">
-                                            {user.isActive ? (
-                                                <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-700 dark:text-green-300 border border-green-200/50 dark:border-green-800/50 flex items-center gap-1 w-fit">
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                                    Active
-                                                </span>
-                                            ) : (
-                                                <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-700 dark:text-gray-300 border border-gray-200/50 dark:border-gray-800/50">
-                                                    Inactive
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="py-4 px-6 text-sm text-muted-foreground">
-                                            {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
-                                        </td>
-                                        <td className="py-4 px-6">
-                                            <div className="flex justify-end gap-2">
-                                                <button className="p-2 hover:bg-blue-500/10 rounded-lg transition-colors group" title="Edit user">
-                                                    <Edit className="h-4 w-4 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                                                </button>
-                                                <button className="p-2 hover:bg-amber-500/10 rounded-lg transition-colors group" title={user.isActive ? 'Deactivate' : 'Activate'}>
-                                                    {user.isActive ? (
-                                                        <UserX className="h-4 w-4 text-gray-600 dark:text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-400" />
-                                                    ) : (
-                                                        <UserCheck className="h-4 w-4 text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400" />
-                                                    )}
-                                                </button>
-                                                <button className="p-2 hover:bg-red-500/10 rounded-lg transition-colors group" title="Delete user">
-                                                    <Trash2 className="h-4 w-4 text-gray-600 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400" />
-                                                </button>
+                <div className="relative">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Link href="/admin/dashboard">
+                                <Button variant="outline" size="icon" className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                                    <ArrowLeft className="h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <div className="space-y-2">
+                                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+                                    User Management
+                                </h1>
+                                <p className="text-muted-foreground text-lg">
+                                    Manage all system users ({users.length} total)
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {/* Search Bar */}
+                            <div className="relative w-64">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black dark:text-white" />
+                                <Input
+                                    placeholder="Search users..."
+                                    value={globalFilter}
+                                    onChange={(e) => setGlobalFilter(e.target.value)}
+                                    className="pl-10 bg-white/80 dark:bg-gray-800/80 border-gray-300/50 dark:border-gray-700/50 placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                                />
+                            </div>
+                            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Add User
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[500px]">
+                                    <DialogHeader>
+                                        <DialogTitle>Add New User</DialogTitle>
+                                        <DialogDescription>
+                                            Create a new user account. Fill in all required fields.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={handleAddUser}>
+                                        <div className="grid gap-4 py-4">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="name">Full Name *</Label>
+                                                <Input
+                                                    id="name"
+                                                    value={formData.name}
+                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                    placeholder="John Doe"
+                                                    required
+                                                />
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {pagination.pages > 1 && (
-                    <div className="flex justify-center items-center gap-3 p-6 bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 border-t border-gray-200/50 dark:border-gray-700/50">
-                        <Button
-                            variant="outline"
-                            onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
-                            disabled={pagination.page === 1}
-                            className="bg-white/80 dark:bg-gray-800/80"
-                        >
-                            Previous
-                        </Button>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 px-4 py-2 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
-                            Page {pagination.page} of {pagination.pages}
-                        </span>
-                        <Button
-                            variant="outline"
-                            onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
-                            disabled={pagination.page === pagination.pages}
-                            className="bg-white/80 dark:bg-gray-800/80"
-                        >
-                            Next
-                        </Button>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="email">Email *</Label>
+                                                <Input
+                                                    id="email"
+                                                    type="email"
+                                                    value={formData.email}
+                                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                    placeholder="john@example.com"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="password">Password *</Label>
+                                                <Input
+                                                    id="password"
+                                                    type="password"
+                                                    value={formData.password}
+                                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                                    placeholder="••••••••"
+                                                    required
+                                                    minLength={6}
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="phone">Phone Number *</Label>
+                                                <Input
+                                                    id="phone"
+                                                    type="tel"
+                                                    value={formData.phone}
+                                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                    placeholder="+1234567890"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="role">Role *</Label>
+                                                <select
+                                                    id="role"
+                                                    value={formData.role}
+                                                    onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                                    required
+                                                >
+                                                    <option value="student">Student</option>
+                                                    <option value="caretaker">Caretaker</option>
+                                                    <option value="warden">Warden</option>
+                                                    <option value="dean">Dean</option>
+                                                    <option value="admin">Admin</option>
+                                                </select>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="hostelId">Hostel ID (Optional)</Label>
+                                                <Input
+                                                    id="hostelId"
+                                                    value={formData.hostelId}
+                                                    onChange={(e) => setFormData({ ...formData, hostelId: e.target.value })}
+                                                    placeholder="Leave empty if not applicable"
+                                                />
+                                            </div>
+                                        </div>
+                                        <DialogFooter>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setDialogOpen(false)}
+                                                disabled={isCreating}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={isCreating}
+                                                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                                            >
+                                                {isCreating ? (
+                                                    <>
+                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                        Creating...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        Create User
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
+
+            {/* Data Table */}
+            <DataTable
+                columns={columns}
+                data={users}
+                globalFilter={globalFilter}
+                onGlobalFilterChange={setGlobalFilter}
+            />
+
+            {/* Edit User Dialog */}
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Edit User</DialogTitle>
+                        <DialogDescription>
+                            Update user information. Email and role cannot be changed.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleEditUser}>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-name">Full Name *</Label>
+                                <Input
+                                    id="edit-name"
+                                    value={editFormData.name}
+                                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                                    placeholder="John Doe"
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-phone">Phone Number *</Label>
+                                <Input
+                                    id="edit-phone"
+                                    type="tel"
+                                    value={editFormData.phone}
+                                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                                    placeholder="+1234567890"
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-hostelId">Hostel ID (Optional)</Label>
+                                <Input
+                                    id="edit-hostelId"
+                                    value={editFormData.hostelId}
+                                    onChange={(e) => setEditFormData({ ...editFormData, hostelId: e.target.value })}
+                                    placeholder="Leave empty if not applicable"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setEditDialogOpen(false)}
+                                disabled={isUpdating}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={isUpdating}
+                                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                            >
+                                {isUpdating ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Update User
+                                    </>
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Delete User</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete {selectedUser?.name}? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setDeleteDialogOpen(false)}
+                            disabled={isDeleting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleDeleteUser}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete User
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

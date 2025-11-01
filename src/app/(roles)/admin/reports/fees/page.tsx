@@ -1,20 +1,75 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { Download, ArrowLeft, DollarSign, TrendingUp, AlertTriangle, Users } from "lucide-react"
+import { Download, ArrowLeft, DollarSign, TrendingUp, AlertTriangle, Users, Loader2, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { useGetFeeCollectionReportQuery } from '@/store/api/adminApi'
+import { toast } from "sonner"
 
 export default function FeeCollectionReport() {
-    const feeData = [
-        { hostel: "Hostel A", totalStudents: 210, paidStudents: 195, totalDue: 12180000, collected: 11310000, pending: 870000, rate: 92.9 },
-        { hostel: "Hostel B", totalStudents: 170, paidStudents: 165, totalDue: 10370000, collected: 10065000, pending: 305000, rate: 97.1 },
-        { hostel: "Hostel C", totalStudents: 120, paidStudents: 105, totalDue: 6960000, collected: 6090000, pending: 870000, rate: 87.5 },
-    ]
+    const { data: response, isLoading, error, refetch } = useGetFeeCollectionReportQuery()
 
-    const totalDue = feeData.reduce((sum, h) => sum + h.totalDue, 0)
-    const totalCollected = feeData.reduce((sum, h) => sum + h.collected, 0)
-    const totalPending = feeData.reduce((sum, h) => sum + h.pending, 0)
-    const collectionRate = ((totalCollected / totalDue) * 100).toFixed(1)
+    const handleExport = async (format: 'pdf' | 'excel' = 'pdf') => {
+        try {
+            toast.success(`Exporting Fee Collection Report as ${format.toUpperCase()}...`)
+
+            const token = localStorage.getItem('token')
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+
+            const response = await fetch(
+                `${baseUrl}/admin/reports/export?reportType=fees&format=${format}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            )
+
+            if (!response.ok) throw new Error('Export failed')
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `fee-collection-report.${format === 'pdf' ? 'pdf' : 'xlsx'}`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+            toast.success('Report exported successfully!')
+        } catch (error) {
+            console.error('Export error:', error)
+            toast.error('Failed to export report')
+        }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-96 space-y-4">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full blur-xl opacity-50 animate-pulse"></div>
+                    <Loader2 className="relative h-12 w-12 animate-spin text-primary" />
+                </div>
+                <p className="text-muted-foreground animate-pulse">Loading fee collection report...</p>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-96 space-y-4">
+                <AlertCircle className="h-12 w-12 text-destructive" />
+                <p className="text-lg text-muted-foreground">Failed to load fee collection report</p>
+                <Button onClick={() => refetch()}>Retry</Button>
+            </div>
+        )
+    }
+
+    const reportData = response?.data
+    if (!reportData) return null
+
+    const { summary, hostels } = reportData
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -31,12 +86,15 @@ export default function FeeCollectionReport() {
                         </Link>
                         <div>
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent mb-2">
-                                Fee Collection Report 💰
+                                Fee Collection Report
                             </h1>
                             <p className="text-muted-foreground text-lg">Payment status and collection summary</p>
                         </div>
                     </div>
-                    <Button className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/50">
+                    <Button
+                        onClick={() => handleExport('pdf')}
+                        className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/50"
+                    >
                         <Download className="h-4 w-4 mr-2" />
                         Export PDF
                     </Button>
@@ -52,7 +110,7 @@ export default function FeeCollectionReport() {
                         </div>
                         <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total Due</p>
                     </div>
-                    <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">₹{(totalDue / 100000).toFixed(1)}L</p>
+                    <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">₹{(summary.totalDue / 100000).toFixed(1)}L</p>
                 </div>
                 <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30 backdrop-blur-xl border border-green-200/50 dark:border-green-800/50 rounded-2xl p-6 hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center gap-3 mb-2">
@@ -61,7 +119,7 @@ export default function FeeCollectionReport() {
                         </div>
                         <p className="text-sm font-semibold text-green-700 dark:text-green-300">Collected</p>
                     </div>
-                    <p className="text-4xl font-bold text-green-600">₹{(totalCollected / 100000).toFixed(1)}L</p>
+                    <p className="text-4xl font-bold text-green-600">₹{(summary.totalCollected / 100000).toFixed(1)}L</p>
                 </div>
                 <div className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/50 dark:to-red-900/30 backdrop-blur-xl border border-red-200/50 dark:border-red-800/50 rounded-2xl p-6 hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center gap-3 mb-2">
@@ -70,7 +128,7 @@ export default function FeeCollectionReport() {
                         </div>
                         <p className="text-sm font-semibold text-red-700 dark:text-red-300">Pending</p>
                     </div>
-                    <p className="text-4xl font-bold text-red-600">₹{(totalPending / 100000).toFixed(1)}L</p>
+                    <p className="text-4xl font-bold text-red-600">₹{(summary.totalPending / 100000).toFixed(1)}L</p>
                 </div>
                 <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/30 backdrop-blur-xl border border-purple-200/50 dark:border-purple-800/50 rounded-2xl p-6 hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center gap-3 mb-2">
@@ -79,11 +137,11 @@ export default function FeeCollectionReport() {
                         </div>
                         <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">Collection Rate</p>
                     </div>
-                    <p className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-2">{collectionRate}%</p>
+                    <p className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-2">{summary.collectionRate.toFixed(1)}%</p>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                         <div
                             className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
-                            style={{ width: `${collectionRate}%` }}
+                            style={{ width: `${summary.collectionRate}%` }}
                         />
                     </div>
                 </div>
@@ -106,7 +164,7 @@ export default function FeeCollectionReport() {
                             </tr>
                         </thead>
                         <tbody>
-                            {feeData.map((hostel) => (
+                            {hostels.map((hostel) => (
                                 <tr key={hostel.hostel} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td className="py-4 px-4 font-bold text-gray-900 dark:text-gray-100">{hostel.hostel}</td>
                                     <td className="py-4 px-4 font-medium">{hostel.totalStudents}</td>
@@ -122,7 +180,7 @@ export default function FeeCollectionReport() {
                                                     style={{ width: `${hostel.rate}%` }}
                                                 />
                                             </div>
-                                            <span className="font-bold text-sm w-12 text-right">{hostel.rate}%</span>
+                                            <span className="font-bold text-sm w-12 text-right">{hostel.rate.toFixed(1)}%</span>
                                         </div>
                                     </td>
                                 </tr>

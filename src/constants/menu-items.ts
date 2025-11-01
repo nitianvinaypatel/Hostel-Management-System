@@ -7,20 +7,7 @@ export const adminMenuItems = [
     {
         title: "User Management",
         icon: "Users",
-        items: [
-            {
-                title: "All Users",
-                url: "/admin/users",
-            },
-            {
-                title: "Add User",
-                url: "/admin/users/add",
-            },
-            {
-                title: "Roles & Permissions",
-                url: "/admin/users/roles",
-            },
-        ],
+        url: "/admin/users",
     },
     {
         title: "Hostel Management",
@@ -31,7 +18,7 @@ export const adminMenuItems = [
                 url: "/admin/hostels",
             },
             {
-                title: "Rooms & Blocks",
+                title: "All Rooms",
                 url: "/admin/hostels/rooms",
             },
             {

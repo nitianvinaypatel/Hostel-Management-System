@@ -2,72 +2,283 @@ import { apiSlice } from './apiSlice';
 import { ApiResponse, PaginatedResponse } from '@/types/common';
 import { Hostel, Room } from '@/types/admin';
 
-interface CreateUserRequest {
-    email: string;
-    password: string;
+// ==================== Request/Response Types ====================
+
+// User Management Types
+interface UserManagement {
+    _id: string;
     name: string;
-    role: string;
+    email: string;
     phone?: string;
+    phoneNumber?: string;
+    role: 'student' | 'caretaker' | 'warden' | 'dean' | 'admin';
+    isActive: boolean;
+    lastLogin?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
+interface CreateUserRequest {
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+    role: 'student' | 'caretaker' | 'warden' | 'dean' | 'admin';
+    hostelId?: string;
+}
+
+interface UpdateUserRequest {
+    name?: string;
+    phone?: string;
+    hostelId?: string;
+}
+
+// Hostel Management Types
 interface CreateHostelRequest {
     name: string;
     code: string;
     type: 'boys' | 'girls' | 'mixed';
     totalRooms: number;
     totalCapacity: number;
-    wardenId?: string;
     facilities: string[];
     address: string;
     contactNumber: string;
 }
 
+interface UpdateHostelRequest {
+    name?: string;
+    totalRooms?: number;
+    totalCapacity?: number;
+    facilities?: string[];
+    address?: string;
+    contactNumber?: string;
+}
+
+// Room Management Types
 interface CreateRoomRequest {
     roomNumber: string;
     hostelId: string;
     floor: number;
     capacity: number;
-    roomType: string;
+    roomType: 'single' | 'double' | 'triple' | 'quad';
     facilities: string[];
     monthlyRent: number;
 }
 
-interface FeeStructureRequest {
+interface UpdateRoomRequest {
+    capacity?: number;
+    facilities?: string[];
+    monthlyRent?: number;
+    status?: 'available' | 'occupied' | 'maintenance' | 'reserved';
+}
+
+// Fee Structure Types
+interface FeeStructure {
+    id: string;
+    hostel: string;
+    academicYear: string;
     hostelFee: number;
     messFee: number;
     securityDeposit: number;
+    maintenanceFee: number;
+    total: number;
+    effectiveFrom: string;
+    effectiveTo: string;
+    status: 'active' | 'inactive';
+    createdAt?: string;
+    updatedAt?: string;
 }
 
-interface ProcessRequisitionRequest {
-    action: 'complete' | 'cancel';
-    actualAmount?: number;
-    proofUrl?: string;
+interface CreateFeeStructureRequest {
+    hostel: string;
+    academicYear: string;
+    hostelFee: number;
+    messFee: number;
+    securityDeposit: number;
+    maintenanceFee: number;
+    effectiveFrom: string;
+    effectiveTo: string;
+}
+
+interface UpdateFeeStructureRequest {
+    hostel?: string;
+    academicYear?: string;
+    hostelFee?: number;
+    messFee?: number;
+    securityDeposit?: number;
+    maintenanceFee?: number;
+    effectiveFrom?: string;
+    effectiveTo?: string;
+}
+
+// Requisition Types
+interface Requisition {
+    id: string;
+    type: 'leave' | 'guest' | 'maintenance' | string;
+    student: string;
+    studentId?: string;
+    hostel: string;
+    description: string;
+    submittedAt: string;
+    status: 'pending' | 'approved' | 'rejected';
+    comments?: string;
+    processedBy?: string;
+    processedAt?: string;
+}
+
+interface ApproveRequisitionRequest {
     comments?: string;
 }
 
-interface BroadcastRequest {
-    title: string;
-    content: string;
-    targetRole: string;
-    priority: string;
+interface RejectRequisitionRequest {
+    comments: string;
 }
+
+// Notification Types
+interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    type: 'announcement' | 'emergency' | 'policy' | 'maintenance';
+    targetRoles: string[];
+    targetHostels?: string[];
+    sentAt: string;
+    sentBy: string;
+    createdAt?: string;
+}
+
+interface CreateNotificationRequest {
+    title: string;
+    message: string;
+    type: 'announcement' | 'emergency' | 'policy' | 'maintenance';
+    targetRoles: string[];
+    targetHostels?: string[];
+}
+
+// Report Types
+interface OccupancyReport {
+    summary: {
+        totalCapacity: number;
+        totalOccupied: number;
+        overallRate: number;
+    };
+    hostels: Array<{
+        hostel: string;
+        totalRooms: number;
+        occupiedRooms: number;
+        capacity: number;
+        occupied: number;
+        rate: number;
+    }>;
+}
+
+interface ComplaintsReport {
+    summary: {
+        totalComplaints: number;
+        totalResolved: number;
+        totalPending: number;
+        resolutionRate: number;
+    };
+    hostels: Array<{
+        hostel: string;
+        total: number;
+        resolved: number;
+        pending: number;
+        inProgress: number;
+        avgResolutionTime: string;
+    }>;
+    categories: Array<{
+        category: string;
+        count: number;
+        percentage: number;
+    }>;
+}
+
+interface FeeCollectionReport {
+    summary: {
+        totalDue: number;
+        totalCollected: number;
+        totalPending: number;
+        collectionRate: number;
+    };
+    hostels: Array<{
+        hostel: string;
+        totalStudents: number;
+        paidStudents: number;
+        totalDue: number;
+        collected: number;
+        pending: number;
+        rate: number;
+    }>;
+}
+
+interface MaintenanceReport {
+    summary: {
+        totalCost: number;
+        avgCostPerHostel: number;
+        totalHostels: number;
+    };
+    hostels: Array<{
+        hostel: string;
+        electrical: number;
+        plumbing: number;
+        carpentry: number;
+        painting: number;
+        others: number;
+        total: number;
+    }>;
+    monthlyTrend: Array<{
+        month: string;
+        amount: number;
+    }>;
+}
+
+interface DashboardStats {
+    totalUsers: number;
+    totalStudents: number;
+    totalHostels: number;
+    totalComplaints: number;
+    totalRequisitions: number;
+    totalRevenue: number;
+    totalPayments: number;
+    totalDeans: number;
+    totalWardens: number;
+    totalCaretakers: number;
+    totalRooms?: number;
+    occupiedRooms?: number;
+    availableRooms?: number;
+    occupancyRate?: number;
+    pendingPayments?: number;
+    pendingComplaints?: number;
+    resolvedComplaints?: number;
+    pendingRequisitions?: number;
+    recentActivities?: Activity[];
+}
+
+interface Activity {
+    id: string;
+    type: 'user' | 'complaint' | 'payment' | 'requisition' | 'hostel' | 'room';
+    action: string;
+    description: string;
+    userName?: string;
+    timestamp: string;
+}
+
+// ==================== Admin API Endpoints ====================
 
 export const adminApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        // Dashboard
-        getAdminDashboard: builder.query<ApiResponse<any>, void>({
+        // ==================== 0. Dashboard ====================
+        getAdminDashboard: builder.query<ApiResponse<DashboardStats>, void>({
             query: () => '/admin/dashboard',
-            providesTags: ['Student', 'Hostel', 'Payment'],
+            providesTags: ['User', 'Student', 'Hostel', 'Room', 'Requisition'],
         }),
 
-        getAdminStatistics: builder.query<ApiResponse<any>, void>({
-            query: () => '/admin/statistics',
-            providesTags: ['Student', 'Hostel', 'Payment'],
-        }),
+        // ==================== 1. User Management ====================
 
-        // User Management
+        // Get All Users with filters
         getAllUsers: builder.query<
-            PaginatedResponse<any>,
+            PaginatedResponse<UserManagement>,
             { role?: string; isActive?: boolean; page?: number; limit?: number; search?: string }
         >({
             query: ({ role, isActive, page = 1, limit = 20, search }) => {
@@ -77,431 +288,500 @@ export const adminApi = apiSlice.injectEndpoints({
                 if (search) params.append('search', search);
                 return `/admin/users?${params}`;
             },
-            providesTags: ['User'],
+            providesTags: (result) =>
+                result?.data
+                    ? [
+                        ...result.data.map(({ _id }) => ({ type: 'User' as const, id: _id })),
+                        { type: 'User', id: 'LIST' },
+                    ]
+                    : [{ type: 'User', id: 'LIST' }],
         }),
 
-        getUserById: builder.query<ApiResponse<any>, string>({
-            query: (id) => `/admin/users/${id}`,
-            providesTags: (_result, _error, id) => [{ type: 'User', id }],
+        // Get Users by Role (convenience method)
+        getUsersByRole: builder.query<
+            PaginatedResponse<UserManagement>,
+            { role: string; page?: number; limit?: number }
+        >({
+            query: ({ role, page = 1, limit = 20 }) => {
+                const params = new URLSearchParams({
+                    role,
+                    page: String(page),
+                    limit: String(limit)
+                });
+                return `/admin/users?${params}`;
+            },
+            providesTags: [{ type: 'User', id: 'LIST' }],
         }),
 
-        createUser: builder.mutation<ApiResponse<any>, CreateUserRequest>({
+        // Search Users
+        searchUsers: builder.query<
+            PaginatedResponse<UserManagement>,
+            { search: string; page?: number; limit?: number }
+        >({
+            query: ({ search, page = 1, limit = 20 }) => {
+                const params = new URLSearchParams({
+                    search,
+                    page: String(page),
+                    limit: String(limit)
+                });
+                return `/admin/users?${params}`;
+            },
+            providesTags: [{ type: 'User', id: 'LIST' }],
+        }),
+
+        // Create User
+        createUser: builder.mutation<ApiResponse<UserManagement>, CreateUserRequest>({
             query: (data) => ({
                 url: '/admin/users',
                 method: 'POST',
                 body: data,
             }),
-            invalidatesTags: ['User'],
+            invalidatesTags: [{ type: 'User', id: 'LIST' }],
         }),
 
-        updateUser: builder.mutation<ApiResponse<any>, { userId: string; data: Partial<CreateUserRequest> }>({
+        // Update User
+        updateUser: builder.mutation<
+            ApiResponse<UserManagement>,
+            { userId: string; data: UpdateUserRequest }
+        >({
             query: ({ userId, data }) => ({
                 url: `/admin/users/${userId}`,
                 method: 'PUT',
                 body: data,
             }),
-            invalidatesTags: (_result, _error, { userId }) => [{ type: 'User', id: userId }, 'User'],
+            invalidatesTags: (_result, _error, { userId }) => [
+                { type: 'User', id: userId },
+                { type: 'User', id: 'LIST' },
+            ],
         }),
 
+        // Toggle User Status (activate/deactivate)
+        toggleUserStatus: builder.mutation<ApiResponse<UserManagement>, string>({
+            query: (userId) => ({
+                url: `/admin/users/${userId}/toggle-status`,
+                method: 'PUT',
+            }),
+            invalidatesTags: (_result, _error, userId) => [
+                { type: 'User', id: userId },
+                { type: 'User', id: 'LIST' },
+            ],
+        }),
+
+        // Delete User
         deleteUser: builder.mutation<ApiResponse<void>, string>({
             query: (userId) => ({
                 url: `/admin/users/${userId}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['User'],
+            invalidatesTags: [{ type: 'User', id: 'LIST' }],
         }),
 
-        activateUser: builder.mutation<ApiResponse<any>, string>({
-            query: (userId) => ({
-                url: `/admin/users/${userId}/activate`,
-                method: 'PUT',
-            }),
-            invalidatesTags: (_result, _error, userId) => [{ type: 'User', id: userId }],
-        }),
+        // ==================== 2. Room Management ====================
 
-        deactivateUser: builder.mutation<ApiResponse<any>, string>({
-            query: (userId) => ({
-                url: `/admin/users/${userId}/deactivate`,
-                method: 'PUT',
-            }),
-            invalidatesTags: (_result, _error, userId) => [{ type: 'User', id: userId }],
-        }),
-
-        resetUserPassword: builder.mutation<ApiResponse<any>, { userId: string; newPassword: string }>({
-            query: ({ userId, newPassword }) => ({
-                url: `/admin/users/${userId}/reset-password`,
-                method: 'PUT',
-                body: { newPassword },
-            }),
-        }),
-
-        // Hostel Management
-        getAllHostels: builder.query<ApiResponse<Hostel[]>, { isActive?: boolean; type?: string }>({
-            query: ({ isActive, type }) => {
-                const params = new URLSearchParams();
-                if (isActive !== undefined) params.append('isActive', String(isActive));
-                if (type) params.append('type', type);
-                return `/admin/hostels?${params}`;
+        // Get All Rooms
+        getAllRooms: builder.query<
+            PaginatedResponse<Room>,
+            { hostelId?: string; page?: number; limit?: number }
+        >({
+            query: ({ hostelId, page = 1, limit = 20 }) => {
+                const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+                if (hostelId) params.append('hostelId', hostelId);
+                return `/admin/rooms?${params}`;
             },
-            providesTags: ['Hostel'],
+            providesTags: (result) =>
+                result?.data
+                    ? [
+                        ...result.data.map(({ _id }) => ({ type: 'Room' as const, id: _id })),
+                        { type: 'Room', id: 'LIST' },
+                    ]
+                    : [{ type: 'Room', id: 'LIST' }],
         }),
 
-        getHostelById: builder.query<ApiResponse<Hostel>, string>({
-            query: (id) => `/admin/hostels/${id}`,
-            providesTags: (_result, _error, id) => [{ type: 'Hostel', id }],
+        // Get Rooms by Hostel
+        getRoomsByHostel: builder.query<ApiResponse<Room[]>, string>({
+            query: (hostelId) => `/admin/rooms?hostelId=${hostelId}`,
+            providesTags: [{ type: 'Room', id: 'LIST' }],
         }),
 
-        createHostel: builder.mutation<ApiResponse<Hostel>, CreateHostelRequest>({
-            query: (data) => ({
-                url: '/admin/hostels',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Hostel'],
-        }),
-
-        updateHostel: builder.mutation<ApiResponse<Hostel>, { hostelId: string; data: Partial<CreateHostelRequest> }>({
-            query: ({ hostelId, data }) => ({
-                url: `/admin/hostels/${hostelId}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: (_result, _error, { hostelId }) => [{ type: 'Hostel', id: hostelId }, 'Hostel'],
-        }),
-
-        deleteHostel: builder.mutation<ApiResponse<void>, string>({
-            query: (hostelId) => ({
-                url: `/admin/hostels/${hostelId}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['Hostel'],
-        }),
-
-        assignWarden: builder.mutation<ApiResponse<any>, { hostelId: string; wardenId: string }>({
-            query: ({ hostelId, wardenId }) => ({
-                url: `/admin/hostels/${hostelId}/assign-warden`,
-                method: 'PUT',
-                body: { wardenId },
-            }),
-            invalidatesTags: (_result, _error, { hostelId }) => [{ type: 'Hostel', id: hostelId }],
-        }),
-
-        assignCaretakerToHostel: builder.mutation<ApiResponse<any>, { hostelId: string; caretakerId: string }>({
-            query: ({ hostelId, caretakerId }) => ({
-                url: `/admin/hostels/${hostelId}/assign-caretaker`,
-                method: 'PUT',
-                body: { caretakerId },
-            }),
-            invalidatesTags: (_result, _error, { hostelId }) => [{ type: 'Hostel', id: hostelId }],
-        }),
-
-        updateFeeStructure: builder.mutation<ApiResponse<any>, { hostelId: string; data: FeeStructureRequest }>({
-            query: ({ hostelId, data }) => ({
-                url: `/admin/hostels/${hostelId}/fee-structure`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: (_result, _error, { hostelId }) => [{ type: 'Hostel', id: hostelId }],
-        }),
-
-        // Room Management
-        getAllRooms: builder.query<ApiResponse<Room[]>, void>({
-            query: () => '/admin/rooms',
-            providesTags: ['Room'],
-        }),
-
-        getRoomById: builder.query<ApiResponse<Room>, string>({
-            query: (id) => `/admin/rooms/${id}`,
-            providesTags: (_result, _error, id) => [{ type: 'Room', id }],
-        }),
-
+        // Create Room
         createRoom: builder.mutation<ApiResponse<Room>, CreateRoomRequest>({
             query: (data) => ({
                 url: '/admin/rooms',
                 method: 'POST',
                 body: data,
             }),
-            invalidatesTags: ['Room'],
+            invalidatesTags: [{ type: 'Room', id: 'LIST' }, 'Hostel'],
         }),
 
-        updateAdminRoom: builder.mutation<ApiResponse<Room>, { id: string; data: Partial<CreateRoomRequest> }>({
-            query: ({ id, data }) => ({
-                url: `/admin/rooms/${id}`,
+        // Update Room
+        updateRoom: builder.mutation<
+            ApiResponse<Room>,
+            { roomId: string; data: UpdateRoomRequest }
+        >({
+            query: ({ roomId, data }) => ({
+                url: `/admin/rooms/${roomId}`,
                 method: 'PUT',
                 body: data,
             }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Room', id }, 'Room'],
+            invalidatesTags: (_result, _error, { roomId }) => [
+                { type: 'Room', id: roomId },
+                { type: 'Room', id: 'LIST' },
+            ],
         }),
 
-        deleteAdminRoom: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/admin/rooms/${id}`,
+        // Delete Room
+        deleteRoom: builder.mutation<ApiResponse<void>, string>({
+            query: (roomId) => ({
+                url: `/admin/rooms/${roomId}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['Room'],
+            invalidatesTags: [{ type: 'Room', id: 'LIST' }, 'Hostel'],
         }),
 
-        bulkCreateRooms: builder.mutation<ApiResponse<any>, { rooms: CreateRoomRequest[] }>({
-            query: (data) => ({
-                url: '/admin/rooms/bulk-create',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Room'],
-        }),
+        // ==================== 3. Fee Structure Management ====================
 
-        // Student Management
-        getAllStudents: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 20 }) => `/admin/students?page=${page}&limit=${limit}`,
-            providesTags: ['Student'],
-        }),
-
-        getStudentById: builder.query<ApiResponse<any>, string>({
-            query: (id) => `/admin/students/${id}`,
-            providesTags: (_result, _error, id) => [{ type: 'Student', id }],
-        }),
-
-        createStudent: builder.mutation<ApiResponse<any>, any>({
-            query: (data) => ({
-                url: '/admin/students',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Student'],
-        }),
-
-        updateStudent: builder.mutation<ApiResponse<any>, { id: string; data: any }>({
-            query: ({ id, data }) => ({
-                url: `/admin/students/${id}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Student', id }, 'Student'],
-        }),
-
-        deleteStudent: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/admin/students/${id}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['Student'],
-        }),
-
-        bulkImportStudents: builder.mutation<ApiResponse<any>, FormData>({
-            query: (data) => ({
-                url: '/admin/students/bulk-import',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Student'],
-        }),
-
-        // Payment Management
-        getAllPayments: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 20 }) => `/admin/payments?page=${page}&limit=${limit}`,
+        // Get All Fee Structures
+        getAllFeeStructures: builder.query<
+            ApiResponse<FeeStructure[]>,
+            { hostelId?: string; academicYear?: string }
+        >({
+            query: ({ hostelId, academicYear }) => {
+                const params = new URLSearchParams();
+                if (hostelId) params.append('hostelId', hostelId);
+                if (academicYear) params.append('academicYear', academicYear);
+                return `/admin/fee-structures?${params}`;
+            },
             providesTags: ['Payment'],
         }),
 
-        getPaymentByIdAdmin: builder.query<ApiResponse<any>, string>({
-            query: (id) => `/admin/payments/${id}`,
-            providesTags: (_result, _error, id) => [{ type: 'Payment', id }],
+        // Get Fee Structures by Hostel
+        getFeeStructuresByHostel: builder.query<ApiResponse<FeeStructure[]>, string>({
+            query: (hostelId) => `/admin/fee-structures?hostelId=${hostelId}`,
+            providesTags: ['Payment'],
         }),
 
-        generateFees: builder.mutation<ApiResponse<any>, { semester: string; academicYear: string }>({
+        // Get Fee Structures by Academic Year
+        getFeeStructuresByYear: builder.query<ApiResponse<FeeStructure[]>, string>({
+            query: (academicYear) => `/admin/fee-structures?academicYear=${academicYear}`,
+            providesTags: ['Payment'],
+        }),
+
+        // Create Fee Structure
+        createFeeStructure: builder.mutation<ApiResponse<FeeStructure>, CreateFeeStructureRequest>({
             query: (data) => ({
-                url: '/admin/payments/generate-fees',
+                url: '/admin/fee-structures',
                 method: 'POST',
                 body: data,
             }),
             invalidatesTags: ['Payment'],
         }),
 
-        processRefund: builder.mutation<ApiResponse<any>, { id: string; refundAmount: number; reason: string }>({
-            query: ({ id, refundAmount, reason }) => ({
-                url: `/admin/payments/${id}/refund`,
+        // Update Fee Structure
+        updateFeeStructure: builder.mutation<
+            ApiResponse<FeeStructure>,
+            { feeId: string; data: UpdateFeeStructureRequest }
+        >({
+            query: ({ feeId, data }) => ({
+                url: `/admin/fee-structures/${feeId}`,
                 method: 'PUT',
-                body: { refundAmount, reason },
+                body: data,
             }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Payment', id }, 'Payment'],
+            invalidatesTags: ['Payment'],
         }),
 
-        getFeeDefaulters: builder.query<ApiResponse<any[]>, void>({
-            query: () => '/admin/payments/defaulters',
-            providesTags: ['Payment'],
+        // Delete Fee Structure
+        deleteFeeStructure: builder.mutation<ApiResponse<void>, string>({
+            query: (feeId) => ({
+                url: `/admin/fee-structures/${feeId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Payment'],
         }),
 
-        // Requisitions
-        getAdminRequisitions: builder.query<PaginatedResponse<any>, { status?: string; page?: number; limit?: number }>({
-            query: ({ status, page = 1, limit = 20 }) => {
+        // ==================== 4. Requisition Management ====================
+
+        // Get All Requisitions
+        getAdminRequisitions: builder.query<
+            PaginatedResponse<Requisition>,
+            { status?: string; type?: string; search?: string; page?: number; limit?: number }
+        >({
+            query: ({ status, type, search, page = 1, limit = 20 }) => {
                 const params = new URLSearchParams({ page: String(page), limit: String(limit) });
                 if (status) params.append('status', status);
+                if (type) params.append('type', type);
+                if (search) params.append('search', search);
                 return `/admin/requisitions?${params}`;
             },
-            providesTags: ['Requisition'],
+            providesTags: (result) =>
+                result?.data
+                    ? [
+                        ...result.data.map(({ id }) => ({ type: 'Requisition' as const, id })),
+                        { type: 'Requisition', id: 'LIST' },
+                    ]
+                    : [{ type: 'Requisition', id: 'LIST' }],
         }),
 
-        getAdminRequisitionById: builder.query<ApiResponse<any>, string>({
-            query: (id) => `/admin/requisitions/${id}`,
-            providesTags: (_result, _error, id) => [{ type: 'Requisition', id }],
-        }),
-
-        processRequisition: builder.mutation<ApiResponse<any>, { requisitionId: string; data: ProcessRequisitionRequest }>({
-            query: ({ requisitionId, data }) => ({
-                url: `/admin/requisitions/${requisitionId}/process`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: (_result, _error, { requisitionId }) => [{ type: 'Requisition', id: requisitionId }, 'Requisition'],
-        }),
-
-        completeRequisition: builder.mutation<ApiResponse<any>, { id: string; actualAmount: number; proofUrl: string }>({
-            query: ({ id, actualAmount, proofUrl }) => ({
-                url: `/admin/requisitions/${id}/complete`,
-                method: 'PUT',
-                body: { actualAmount, proofUrl },
-            }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Requisition', id }, 'Requisition'],
-        }),
-
-        cancelRequisition: builder.mutation<ApiResponse<any>, { id: string; reason: string }>({
-            query: ({ id, reason }) => ({
-                url: `/admin/requisitions/${id}/cancel`,
-                method: 'PUT',
-                body: { reason },
-            }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Requisition', id }, 'Requisition'],
-        }),
-
-        // System Configuration
-        getSystemConfig: builder.query<ApiResponse<any>, void>({
-            query: () => '/admin/config',
-        }),
-
-        updateSystemConfig: builder.mutation<ApiResponse<any>, any>({
-            query: (data) => ({
-                url: '/admin/config',
-                method: 'PUT',
-                body: data,
-            }),
-        }),
-
-        getSystemLogs: builder.query<ApiResponse<any[]>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 50 }) => `/admin/logs?page=${page}&limit=${limit}`,
-        }),
-
-        // Reports
-        getAdminReports: builder.query<ApiResponse<any>, { reportType: string; startDate?: string; endDate?: string }>({
-            query: ({ reportType, startDate, endDate }) => {
-                const params = new URLSearchParams({ reportType });
-                if (startDate) params.append('startDate', startDate);
-                if (endDate) params.append('endDate', endDate);
-                return `/admin/reports?${params}`;
+        // Get Requisitions by Status
+        getRequisitionsByStatus: builder.query<
+            PaginatedResponse<Requisition>,
+            { status: string; page?: number; limit?: number }
+        >({
+            query: ({ status, page = 1, limit = 20 }) => {
+                const params = new URLSearchParams({
+                    status,
+                    page: String(page),
+                    limit: String(limit)
+                });
+                return `/admin/requisitions?${params}`;
             },
-            providesTags: ['Report'],
+            providesTags: [{ type: 'Requisition', id: 'LIST' }],
         }),
 
-        getSystemOverview: builder.query<ApiResponse<any>, void>({
-            query: () => '/admin/reports/overview',
-            providesTags: ['Report'],
+        // Get Requisitions by Type
+        getRequisitionsByType: builder.query<
+            PaginatedResponse<Requisition>,
+            { type: string; page?: number; limit?: number }
+        >({
+            query: ({ type, page = 1, limit = 20 }) => {
+                const params = new URLSearchParams({
+                    type,
+                    page: String(page),
+                    limit: String(limit)
+                });
+                return `/admin/requisitions?${params}`;
+            },
+            providesTags: [{ type: 'Requisition', id: 'LIST' }],
         }),
 
-        getHostelsReport: builder.query<ApiResponse<any>, void>({
-            query: () => '/admin/reports/hostels',
-            providesTags: ['Report'],
+        // Search Requisitions
+        searchRequisitions: builder.query<
+            PaginatedResponse<Requisition>,
+            { search: string; page?: number; limit?: number }
+        >({
+            query: ({ search, page = 1, limit = 20 }) => {
+                const params = new URLSearchParams({
+                    search,
+                    page: String(page),
+                    limit: String(limit)
+                });
+                return `/admin/requisitions?${params}`;
+            },
+            providesTags: [{ type: 'Requisition', id: 'LIST' }],
         }),
 
-        getStudentsReport: builder.query<ApiResponse<any>, void>({
-            query: () => '/admin/reports/students',
-            providesTags: ['Report'],
-        }),
-
-        getPaymentsReportAdmin: builder.query<ApiResponse<any>, void>({
-            query: () => '/admin/reports/payments',
-            providesTags: ['Report'],
-        }),
-
-        getComplaintsReportAdmin: builder.query<ApiResponse<any>, void>({
-            query: () => '/admin/reports/complaints',
-            providesTags: ['Report'],
-        }),
-
-        getRequisitionsReportAdmin: builder.query<ApiResponse<any>, void>({
-            query: () => '/admin/reports/requisitions',
-            providesTags: ['Report'],
-        }),
-
-        exportReport: builder.mutation<Blob, { reportType: string; format: string }>({
-            query: (data) => ({
-                url: '/admin/reports/export',
-                method: 'POST',
-                body: data,
-                responseHandler: (response) => response.blob(),
+        // Approve Requisition
+        approveRequisition: builder.mutation<
+            ApiResponse<Requisition>,
+            { requisitionId: string; data?: ApproveRequisitionRequest }
+        >({
+            query: ({ requisitionId, data }) => ({
+                url: `/admin/requisitions/${requisitionId}/approve`,
+                method: 'PUT',
+                body: data || {},
             }),
+            invalidatesTags: (_result, _error, { requisitionId }) => [
+                { type: 'Requisition', id: requisitionId },
+                { type: 'Requisition', id: 'LIST' },
+            ],
         }),
 
-        // Broadcast
-        broadcastNotification: builder.mutation<ApiResponse<any>, BroadcastRequest>({
+        // Reject Requisition
+        rejectRequisition: builder.mutation<
+            ApiResponse<Requisition>,
+            { requisitionId: string; data: RejectRequisitionRequest }
+        >({
+            query: ({ requisitionId, data }) => ({
+                url: `/admin/requisitions/${requisitionId}/reject`,
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: (_result, _error, { requisitionId }) => [
+                { type: 'Requisition', id: requisitionId },
+                { type: 'Requisition', id: 'LIST' },
+            ],
+        }),
+
+        // ==================== 5. Notifications ====================
+
+        // Get All Notifications
+        getAdminNotifications: builder.query<
+            PaginatedResponse<Notification>,
+            { page?: number; limit?: number }
+        >({
+            query: ({ page = 1, limit = 20 }) => {
+                const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+                return `/admin/notifications?${params}`;
+            },
+            providesTags: ['Notification'],
+        }),
+
+        // Create Notification
+        createNotification: builder.mutation<ApiResponse<Notification>, CreateNotificationRequest>({
             query: (data) => ({
-                url: '/admin/broadcast',
+                url: '/admin/notifications',
                 method: 'POST',
                 body: data,
             }),
             invalidatesTags: ['Notification'],
         }),
+
+        // ==================== 6. Reports ====================
+
+        // Occupancy Report
+        getOccupancyReport: builder.query<ApiResponse<OccupancyReport>, void>({
+            query: () => '/admin/reports/occupancy',
+            providesTags: ['Report'],
+        }),
+
+        // Complaints Report
+        getComplaintsReport: builder.query<ApiResponse<ComplaintsReport>, void>({
+            query: () => '/admin/reports/complaints',
+            providesTags: ['Report'],
+        }),
+
+        // Fee Collection Report
+        getFeeCollectionReport: builder.query<ApiResponse<FeeCollectionReport>, void>({
+            query: () => '/admin/reports/fees',
+            providesTags: ['Report'],
+        }),
+
+        // Maintenance Report
+        getMaintenanceReport: builder.query<ApiResponse<MaintenanceReport>, void>({
+            query: () => '/admin/reports/maintenance',
+            providesTags: ['Report'],
+        }),
+
+        // Export Report
+        exportReport: builder.query<
+            Blob,
+            { reportType: string; format: string }
+        >({
+            query: ({ reportType, format }) => ({
+                url: `/admin/reports/export?reportType=${reportType}&format=${format}`,
+                responseHandler: (response) => response.blob(),
+            }),
+        }),
+
+        // ==================== 7. Hostel Management ====================
+
+        // Get All Hostels
+        getAllHostels: builder.query<
+            ApiResponse<Hostel[]>,
+            { isActive?: boolean; type?: string }
+        >({
+            query: ({ isActive, type }) => {
+                const params = new URLSearchParams();
+                if (isActive !== undefined) params.append('isActive', String(isActive));
+                if (type) params.append('type', type);
+                return `/admin/hostels?${params}`;
+            },
+            providesTags: (result) =>
+                result?.data
+                    ? [
+                        ...result.data.map(({ _id }) => ({ type: 'Hostel' as const, id: _id })),
+                        { type: 'Hostel', id: 'LIST' },
+                    ]
+                    : [{ type: 'Hostel', id: 'LIST' }],
+        }),
+
+        // Get Active Hostels
+        getActiveHostels: builder.query<ApiResponse<Hostel[]>, void>({
+            query: () => '/admin/hostels?isActive=true',
+            providesTags: [{ type: 'Hostel', id: 'LIST' }],
+        }),
+
+        // Create Hostel
+        createHostel: builder.mutation<ApiResponse<Hostel>, CreateHostelRequest>({
+            query: (data) => ({
+                url: '/admin/hostels',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: [{ type: 'Hostel', id: 'LIST' }],
+        }),
+
+        // Update Hostel
+        updateHostel: builder.mutation<
+            ApiResponse<Hostel>,
+            { hostelId: string; data: UpdateHostelRequest }
+        >({
+            query: ({ hostelId, data }) => ({
+                url: `/admin/hostels/${hostelId}`,
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: (_result, _error, { hostelId }) => [
+                { type: 'Hostel', id: hostelId },
+                { type: 'Hostel', id: 'LIST' },
+            ],
+        }),
+
+        // Delete Hostel
+        deleteHostel: builder.mutation<ApiResponse<void>, string>({
+            query: (hostelId) => ({
+                url: `/admin/hostels/${hostelId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: [{ type: 'Hostel', id: 'LIST' }],
+        }),
+
+
     }),
 });
 
+// ==================== Export Hooks ====================
+
 export const {
+    // Dashboard
     useGetAdminDashboardQuery,
-    useGetAdminStatisticsQuery,
+
+    // User Management
     useGetAllUsersQuery,
-    useGetUserByIdQuery,
+    useGetUsersByRoleQuery,
+    useSearchUsersQuery,
     useCreateUserMutation,
     useUpdateUserMutation,
+    useToggleUserStatusMutation,
     useDeleteUserMutation,
-    useActivateUserMutation,
-    useDeactivateUserMutation,
-    useResetUserPasswordMutation,
+
+    // Room Management
+    useGetAllRoomsQuery,
+    useGetRoomsByHostelQuery,
+    useCreateRoomMutation,
+    useUpdateRoomMutation,
+    useDeleteRoomMutation,
+
+    // Fee Structure Management
+    useGetAllFeeStructuresQuery,
+    useGetFeeStructuresByHostelQuery,
+    useGetFeeStructuresByYearQuery,
+    useCreateFeeStructureMutation,
+    useUpdateFeeStructureMutation,
+    useDeleteFeeStructureMutation,
+
+    // Requisition Management
+    useGetAdminRequisitionsQuery,
+    useGetRequisitionsByStatusQuery,
+    useGetRequisitionsByTypeQuery,
+    useSearchRequisitionsQuery,
+    useApproveRequisitionMutation,
+    useRejectRequisitionMutation,
+
+    // Notifications
+    useGetAdminNotificationsQuery,
+    useCreateNotificationMutation,
+
+    // Reports
+    useGetOccupancyReportQuery,
+    useGetComplaintsReportQuery,
+    useGetFeeCollectionReportQuery,
+    useGetMaintenanceReportQuery,
+    useExportReportQuery,
+
+    // Hostel Management
     useGetAllHostelsQuery,
-    useGetHostelByIdQuery,
+    useGetActiveHostelsQuery,
     useCreateHostelMutation,
     useUpdateHostelMutation,
     useDeleteHostelMutation,
-    useAssignWardenMutation,
-    useAssignCaretakerToHostelMutation,
-    useUpdateFeeStructureMutation,
-    useGetAllRoomsQuery,
-    useGetRoomByIdQuery,
-    useCreateRoomMutation,
-    useUpdateAdminRoomMutation,
-    useDeleteAdminRoomMutation,
-    useBulkCreateRoomsMutation,
-    useGetAllStudentsQuery,
-    useGetStudentByIdQuery,
-    useCreateStudentMutation,
-    useUpdateStudentMutation,
-    useDeleteStudentMutation,
-    useBulkImportStudentsMutation,
-    useGetAllPaymentsQuery,
-    useGetPaymentByIdAdminQuery,
-    useGenerateFeesMutation,
-    useProcessRefundMutation,
-    useGetFeeDefaultersQuery,
-    useGetAdminRequisitionsQuery,
-    useGetAdminRequisitionByIdQuery,
-    useProcessRequisitionMutation,
-    useCompleteRequisitionMutation,
-    useCancelRequisitionMutation,
-    useGetSystemConfigQuery,
-    useUpdateSystemConfigMutation,
-    useGetSystemLogsQuery,
-    useGetAdminReportsQuery,
-    useGetSystemOverviewQuery,
-    useGetHostelsReportQuery,
-    useGetStudentsReportQuery,
-    useGetPaymentsReportAdminQuery,
-    useGetComplaintsReportAdminQuery,
-    useGetRequisitionsReportAdminQuery,
-    useExportReportMutation,
-    useBroadcastNotificationMutation,
 } = adminApi;

@@ -40,11 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# backend requirements document
-BACKEND_REQUIREMENTS.md
-COMPLETE_PROJECT_PROMPT.md
+# markdown files except README.md
+*.md
+!README.md
+
+# other project files
 HMS_Backend_Complete.postman_collection.json
-POSTER_TEMPLATE.md
-PROJECT_PROMPT_GUIDE.md
-PROJECT_SUMMARY.md
 hms_project_posterr.html
+Admin-API-Collection.postman_collection.json
