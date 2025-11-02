@@ -72,11 +72,6 @@ const roleConfig = {
 export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.ComponentProps<typeof Sidebar>) {
     const pathname = usePathname()
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.student
-    const [mounted, setMounted] = React.useState(false)
-
-    React.useEffect(() => {
-        setMounted(true)
-    }, [])
 
     const getIcon = (iconName: string): React.ComponentType => {
         const Icon = LucideIcons[iconName as keyof typeof LucideIcons] as React.ComponentType | undefined
@@ -93,9 +88,9 @@ export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.Co
                                 <Image
                                     src="/images/Logo_NITMZ.png"
                                     alt="NIT Mizoram Logo"
-                                    width={40}
-                                    height={40}
-                                    className="object-contain"
+                                    width={46}
+                                    height={46}
+                                    className="object-contain w-auto h-auto"
                                 />
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
@@ -120,7 +115,7 @@ export function AppSidebar({ items, role, ...props }: AppSidebarProps & React.Co
                                 const isAnySubItemActive = item.items.some(subItem => pathname === subItem.url)
 
                                 return (
-                                    <Collapsible key={item.title} asChild defaultOpen={mounted && isAnySubItemActive} className="group/collapsible">
+                                    <Collapsible key={item.title} asChild defaultOpen={isAnySubItemActive} className="group/collapsible">
                                         <SidebarMenuItem>
                                             <CollapsibleTrigger asChild>
                                                 <SidebarMenuButton

@@ -1,63 +1,151 @@
 import { apiSlice } from './apiSlice';
 import { ApiResponse, PaginatedResponse } from '@/types/common';
 
+// Request/Response Interfaces
 interface UpdateComplaintStatusRequest {
-    status: string;
-    comments?: string;
+    status: 'pending' | 'in_progress' | 'resolved';
+    notes?: string;
+}
+
+interface ForwardComplaintRequest {
+    notes: string;
+    priority: 'low' | 'medium' | 'high';
+}
+
+interface ComplaintUpdateRequest {
+    message: string;
+}
+
+interface ApproveRequestRequest {
+    notes?: string;
+    effectiveDate?: string;
+}
+
+interface RejectRequestRequest {
+    reason: string;
+    notes?: string;
 }
 
 interface CreateRequisitionRequest {
     title: string;
     description: string;
-    category: string;
-    estimatedAmount: number;
-    urgency: string;
+    category: 'maintenance' | 'repair' | 'inventory' | 'other';
+    amount: number;
+    urgency: 'low' | 'medium' | 'high';
+}
+
+interface UpdateDayMenuRequest {
+    breakfast: string;
+    lunch: string;
+    dinner: string;
 }
 
 interface CreateRoomRequest {
     roomNumber: string;
     floor: number;
+    type: 'single' | 'double' | 'triple' | 'quad';
     capacity: number;
-    roomType: string;
-    facilities: string[];
-    monthlyRent: number;
+    amenities: string[];
 }
 
-interface AllotRoomRequest {
+interface UpdateRoomRequest {
+    roomNumber?: string;
+    floor?: number;
+    type?: 'single' | 'double' | 'triple' | 'quad';
+    capacity?: number;
+    amenities?: string[];
+    maintenanceStatus?: string;
+}
+
+interface AllocateRoomRequest {
     studentId: string;
     roomId: string;
+    bedPreference?: string;
+    notes?: string;
+    effectiveDate?: string;
 }
 
-interface MessMenuRequest {
-    weekMenu: Record<string, any>;
-    effectiveFrom: string;
+interface AutoAllocateRequest {
+    numberOfStudents: number;
+    criteria: string;
+    roomTypes: string[];
+    floorPreference?: number;
 }
 
-interface NoticeRequest {
+interface DeallocateRoomRequest {
+    reason: string;
+    effectiveDate?: string;
+}
+
+interface SendNoticeRequest {
     title: string;
-    content: string;
-    priority: string;
+    message: string;
+    priority: 'low' | 'medium' | 'high';
+}
+
+interface ComplaintsQueryParams {
+    page?: number;
+    limit?: number;
+    status?: 'all' | 'pending' | 'in_progress' | 'resolved';
+    priority?: 'low' | 'medium' | 'high';
+    search?: string;
+}
+
+interface RequestsQueryParams {
+    page?: number;
+    limit?: number;
+    status?: 'all' | 'pending' | 'approved' | 'rejected';
+    type?: 'all' | 'room_change' | 'hostel_change';
+    search?: string;
+}
+
+interface RequisitionsQueryParams {
+    page?: number;
+    limit?: number;
+    status?: 'all' | 'pending' | 'approved' | 'rejected';
+    category?: 'all' | 'maintenance' | 'repair' | 'inventory' | 'other';
+}
+
+interface RoomsQueryParams {
+    page?: number;
+    limit?: number;
+    floor?: number;
+    type?: 'single' | 'double' | 'triple' | 'quad';
+    status?: 'all' | 'available' | 'occupied' | 'full';
+    search?: string;
+}
+
+interface AvailableRoomsQueryParams {
+    type?: string;
+    floor?: number;
+    hostelId?: string;
+}
+
+interface NotificationsQueryParams {
+    page?: number;
+    limit?: number;
+    type?: 'all' | 'complaint' | 'request' | 'requisition' | 'system';
+    status?: 'all' | 'unread' | 'read';
 }
 
 export const caretakerApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        // Dashboard
+        // 1. Dashboard
         getCaretakerDashboard: builder.query<ApiResponse<any>, void>({
             query: () => '/caretaker/dashboard',
-            providesTags: ['Student'],
+            providesTags: ['Student', 'Room', 'Complaint'],
         }),
 
-        // Hostel Info
-        getHostelInfo: builder.query<ApiResponse<any>, void>({
-            query: () => '/caretaker/hostel-info',
-            providesTags: ['Hostel'],
-        }),
-
-        // Complaints
-        getCaretakerComplaints: builder.query<PaginatedResponse<any>, { status?: string; page?: number; limit?: number }>({
-            query: ({ status, page = 1, limit = 20 }) => {
-                const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-                if (status) params.append('status', status);
+        // 2. Complaints Management (5 endpoints)
+        getCaretakerComplaints: builder.query<PaginatedResponse<any>, ComplaintsQueryParams>({
+            query: ({ page = 1, limit = 10, status = 'all', priority, search }) => {
+                const params = new URLSearchParams({
+                    page: String(page),
+                    limit: String(limit),
+                    status,
+                });
+                if (priority) params.append('priority', priority);
+                if (search) params.append('search', search);
                 return `/caretaker/complaints?${params}`;
             },
             providesTags: ['Complaint'],
@@ -71,42 +159,79 @@ export const caretakerApi = apiSlice.injectEndpoints({
         updateComplaintStatus: builder.mutation<ApiResponse<any>, { id: string; data: UpdateComplaintStatusRequest }>({
             query: ({ id, data }) => ({
                 url: `/caretaker/complaints/${id}/status`,
-                method: 'PUT',
+                method: 'PATCH',
                 body: data,
             }),
             invalidatesTags: (_result, _error, { id }) => [{ type: 'Complaint', id }, 'Complaint'],
         }),
 
-        assignComplaint: builder.mutation<ApiResponse<any>, { id: string; assignedTo: string }>({
-            query: ({ id, assignedTo }) => ({
-                url: `/caretaker/complaints/${id}/assign`,
-                method: 'PUT',
-                body: { assignedTo },
-            }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Complaint', id }],
-        }),
-
-        addCaretakerComplaintComment: builder.mutation<ApiResponse<any>, { id: string; comment: string }>({
-            query: ({ id, comment }) => ({
-                url: `/caretaker/complaints/${id}/comment`,
+        forwardComplaintToWarden: builder.mutation<ApiResponse<any>, { id: string; data: ForwardComplaintRequest }>({
+            query: ({ id, data }) => ({
+                url: `/caretaker/complaints/${id}/forward`,
                 method: 'POST',
-                body: { comment },
-            }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Complaint', id }],
-        }),
-
-        resolveComplaint: builder.mutation<ApiResponse<any>, { id: string; resolution: string }>({
-            query: ({ id, resolution }) => ({
-                url: `/caretaker/complaints/${id}/resolve`,
-                method: 'PUT',
-                body: { resolution },
+                body: data,
             }),
             invalidatesTags: (_result, _error, { id }) => [{ type: 'Complaint', id }, 'Complaint'],
         }),
 
-        // Requisitions
-        getCaretakerRequisitions: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 20 }) => `/caretaker/requisitions?page=${page}&limit=${limit}`,
+        addComplaintUpdate: builder.mutation<ApiResponse<any>, { id: string; data: ComplaintUpdateRequest }>({
+            query: ({ id, data }) => ({
+                url: `/caretaker/complaints/${id}/update`,
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: (_result, _error, { id }) => [{ type: 'Complaint', id }],
+        }),
+
+        // 3. Change Requests (4 endpoints)
+        getCaretakerRequests: builder.query<PaginatedResponse<any>, RequestsQueryParams>({
+            query: ({ page = 1, limit = 10, status = 'all', type = 'all', search }) => {
+                const params = new URLSearchParams({
+                    page: String(page),
+                    limit: String(limit),
+                    status,
+                    type,
+                });
+                if (search) params.append('search', search);
+                return `/caretaker/requests?${params}`;
+            },
+            providesTags: ['Request'],
+        }),
+
+        getCaretakerRequestById: builder.query<ApiResponse<any>, string>({
+            query: (id) => `/caretaker/requests/${id}`,
+            providesTags: (_result, _error, id) => [{ type: 'Request', id }],
+        }),
+
+        approveRequest: builder.mutation<ApiResponse<any>, { id: string; data: ApproveRequestRequest }>({
+            query: ({ id, data }) => ({
+                url: `/caretaker/requests/${id}/approve`,
+                method: 'PATCH',
+                body: data,
+            }),
+            invalidatesTags: (_result, _error, { id }) => [{ type: 'Request', id }, 'Request'],
+        }),
+
+        rejectRequest: builder.mutation<ApiResponse<any>, { id: string; data: RejectRequestRequest }>({
+            query: ({ id, data }) => ({
+                url: `/caretaker/requests/${id}/reject`,
+                method: 'PATCH',
+                body: data,
+            }),
+            invalidatesTags: (_result, _error, { id }) => [{ type: 'Request', id }, 'Request'],
+        }),
+
+        // 4. Requisitions (4 endpoints)
+        getCaretakerRequisitions: builder.query<PaginatedResponse<any>, RequisitionsQueryParams>({
+            query: ({ page = 1, limit = 10, status = 'all', category = 'all' }) => {
+                const params = new URLSearchParams({
+                    page: String(page),
+                    limit: String(limit),
+                    status,
+                    category,
+                });
+                return `/caretaker/requisitions?${params}`;
+            },
             providesTags: ['Requisition'],
         }),
 
@@ -124,38 +249,62 @@ export const caretakerApi = apiSlice.injectEndpoints({
             invalidatesTags: ['Requisition'],
         }),
 
-        updateRequisition: builder.mutation<ApiResponse<any>, { id: string; data: Partial<CreateRequisitionRequest> }>({
-            query: ({ id, data }) => ({
-                url: `/caretaker/requisitions/${id}`,
+        uploadRequisitionDocuments: builder.mutation<ApiResponse<any>, { id: string; documents: FormData }>({
+            query: ({ id, documents }) => ({
+                url: `/caretaker/requisitions/${id}/documents`,
+                method: 'POST',
+                body: documents,
+            }),
+            invalidatesTags: (_result, _error, { id }) => [{ type: 'Requisition', id }],
+        }),
+
+        // 5. Mess Menu Management (4 endpoints)
+        getWeeklyMessMenu: builder.query<ApiResponse<any>, void>({
+            query: () => '/caretaker/mess-menu',
+            providesTags: ['MessMenu'],
+        }),
+
+        getDayMenu: builder.query<ApiResponse<any>, string>({
+            query: (day) => `/caretaker/mess-menu/${day}`,
+            providesTags: (_result, _error, day) => [{ type: 'MessMenu', id: day }],
+        }),
+
+        updateDayMenu: builder.mutation<ApiResponse<any>, { day: string; data: UpdateDayMenuRequest }>({
+            query: ({ day, data }) => ({
+                url: `/caretaker/mess-menu/${day}`,
                 method: 'PUT',
                 body: data,
             }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Requisition', id }, 'Requisition'],
+            invalidatesTags: (_result, _error, { day }) => [{ type: 'MessMenu', id: day }, 'MessMenu'],
         }),
 
-        submitRequisitionToWarden: builder.mutation<ApiResponse<any>, string>({
-            query: (id) => ({
-                url: `/caretaker/requisitions/${id}/submit`,
-                method: 'POST',
-            }),
-            invalidatesTags: (_result, _error, id) => [{ type: 'Requisition', id }, 'Requisition'],
+        getMessStats: builder.query<ApiResponse<any>, void>({
+            query: () => '/caretaker/mess-stats',
+            providesTags: ['MessMenu'],
         }),
 
-        deleteRequisition: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/caretaker/requisitions/${id}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['Requisition'],
-        }),
-
-        // Rooms
-        getCaretakerRooms: builder.query<ApiResponse<any[]>, void>({
-            query: () => '/caretaker/rooms',
+        // 6. Room Management (6 endpoints)
+        getCaretakerRooms: builder.query<PaginatedResponse<any>, RoomsQueryParams>({
+            query: ({ page = 1, limit = 10, floor, type, status = 'all', search }) => {
+                const params = new URLSearchParams({
+                    page: String(page),
+                    limit: String(limit),
+                    status,
+                });
+                if (floor) params.append('floor', String(floor));
+                if (type) params.append('type', type);
+                if (search) params.append('search', search);
+                return `/caretaker/rooms?${params}`;
+            },
             providesTags: ['Room'],
         }),
 
-        addRoom: builder.mutation<ApiResponse<any>, CreateRoomRequest>({
+        getCaretakerRoomById: builder.query<ApiResponse<any>, string>({
+            query: (id) => `/caretaker/rooms/${id}`,
+            providesTags: (_result, _error, id) => [{ type: 'Room', id }],
+        }),
+
+        createRoom: builder.mutation<ApiResponse<any>, CreateRoomRequest>({
             query: (data) => ({
                 url: '/caretaker/rooms',
                 method: 'POST',
@@ -164,96 +313,114 @@ export const caretakerApi = apiSlice.injectEndpoints({
             invalidatesTags: ['Room'],
         }),
 
-        updateRoom: builder.mutation<ApiResponse<any>, { roomId: string; data: Partial<CreateRoomRequest> }>({
-            query: ({ roomId, data }) => ({
-                url: `/caretaker/rooms/${roomId}`,
+        updateRoom: builder.mutation<ApiResponse<any>, { id: string; data: UpdateRoomRequest }>({
+            query: ({ id, data }) => ({
+                url: `/caretaker/rooms/${id}`,
                 method: 'PUT',
                 body: data,
             }),
-            invalidatesTags: ['Room'],
+            invalidatesTags: (_result, _error, { id }) => [{ type: 'Room', id }, 'Room'],
         }),
 
         deleteRoom: builder.mutation<ApiResponse<void>, string>({
-            query: (roomId) => ({
-                url: `/caretaker/rooms/${roomId}`,
+            query: (id) => ({
+                url: `/caretaker/rooms/${id}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Room'],
         }),
 
-        allotRoom: builder.mutation<ApiResponse<any>, AllotRoomRequest>({
-            query: (data) => ({
-                url: '/caretaker/rooms/allot',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Room', 'Student'],
+        getRoomStats: builder.query<ApiResponse<any>, void>({
+            query: () => '/caretaker/rooms/stats',
+            providesTags: ['Room'],
         }),
 
-        deallocateRoom: builder.mutation<ApiResponse<any>, { studentId: string }>({
-            query: (data) => ({
-                url: '/caretaker/rooms/deallocate',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Room', 'Student'],
-        }),
-
-        // Mess Menu
-        getCaretakerMessMenu: builder.query<ApiResponse<any>, void>({
-            query: () => '/caretaker/mess-menu',
-            providesTags: ['MessMenu'],
-        }),
-
-        createMessMenu: builder.mutation<ApiResponse<any>, MessMenuRequest>({
-            query: (data) => ({
-                url: '/caretaker/mess-menu',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['MessMenu'],
-        }),
-
-        updateMessMenu: builder.mutation<ApiResponse<any>, { menuId: string; data: Partial<MessMenuRequest> }>({
-            query: ({ menuId, data }) => ({
-                url: `/caretaker/mess-menu/${menuId}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: ['MessMenu'],
-        }),
-
-        deleteMessMenu: builder.mutation<ApiResponse<void>, string>({
-            query: (menuId) => ({
-                url: `/caretaker/mess-menu/${menuId}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['MessMenu'],
-        }),
-
-        // Requests
-        getCaretakerRequests: builder.query<PaginatedResponse<any>, { status?: string; page?: number; limit?: number }>({
-            query: ({ status, page = 1, limit = 20 }) => {
-                const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-                if (status) params.append('status', status);
-                return `/caretaker/requests?${params}`;
-            },
-            providesTags: ['Request'],
-        }),
-
-        // Students
-        getCaretakerStudents: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 20 }) => `/caretaker/students?page=${page}&limit=${limit}`,
+        // 7. Room Allotment (6 endpoints)
+        searchStudents: builder.query<ApiResponse<any[]>, string>({
+            query: (query) => `/caretaker/students/search?query=${query}`,
             providesTags: ['Student'],
         }),
 
-        // Notices
-        getCaretakerNotices: builder.query<ApiResponse<any[]>, void>({
-            query: () => '/caretaker/notices',
-            providesTags: ['Notice'],
+        getAvailableRooms: builder.query<ApiResponse<any[]>, AvailableRoomsQueryParams>({
+            query: ({ type, floor, hostelId }) => {
+                const params = new URLSearchParams();
+                if (type) params.append('type', type);
+                if (floor) params.append('floor', String(floor));
+                if (hostelId) params.append('hostelId', hostelId);
+                return `/caretaker/rooms/available?${params}`;
+            },
+            providesTags: ['Room'],
         }),
 
-        sendNotice: builder.mutation<ApiResponse<any>, NoticeRequest>({
+        allocateRoom: builder.mutation<ApiResponse<any>, AllocateRoomRequest>({
+            query: (data) => ({
+                url: '/caretaker/allocations',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Room', 'Student'],
+        }),
+
+        autoAllocateRooms: builder.mutation<ApiResponse<any>, AutoAllocateRequest>({
+            query: (data) => ({
+                url: '/caretaker/allocations/auto',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Room', 'Student'],
+        }),
+
+        getRecentAllocations: builder.query<ApiResponse<any[]>, number>({
+            query: (limit = 10) => `/caretaker/allocations/recent?limit=${limit}`,
+            providesTags: ['Room', 'Student'],
+        }),
+
+        deallocateRoom: builder.mutation<ApiResponse<any>, { studentId: string; data: DeallocateRoomRequest }>({
+            query: ({ studentId, data }) => ({
+                url: `/caretaker/allocations/${studentId}`,
+                method: 'DELETE',
+                body: data,
+            }),
+            invalidatesTags: ['Room', 'Student'],
+        }),
+
+        // 8. Notifications (3 endpoints)
+        getCaretakerNotifications: builder.query<PaginatedResponse<any>, NotificationsQueryParams>({
+            query: ({ page = 1, limit = 20, type = 'all', status = 'all' }) => {
+                const params = new URLSearchParams({
+                    page: String(page),
+                    limit: String(limit),
+                    type,
+                    status,
+                });
+                return `/caretaker/notifications?${params}`;
+            },
+            providesTags: ['Notification'],
+        }),
+
+        markNotificationAsRead: builder.mutation<ApiResponse<any>, string>({
+            query: (id) => ({
+                url: `/caretaker/notifications/${id}/read`,
+                method: 'PATCH',
+            }),
+            invalidatesTags: (_result, _error, id) => [{ type: 'Notification', id }, 'Notification'],
+        }),
+
+        markAllNotificationsAsRead: builder.mutation<ApiResponse<any>, void>({
+            query: () => ({
+                url: '/caretaker/notifications/read-all',
+                method: 'PATCH',
+            }),
+            invalidatesTags: ['Notification'],
+        }),
+
+        // 9. Additional Endpoints (2 endpoints)
+        getAllStudents: builder.query<ApiResponse<any[]>, void>({
+            query: () => '/caretaker/students',
+            providesTags: ['Student'],
+        }),
+
+        sendNoticeToStudents: builder.mutation<ApiResponse<any>, SendNoticeRequest>({
             query: (data) => ({
                 url: '/caretaker/notices',
                 method: 'POST',
@@ -261,55 +428,60 @@ export const caretakerApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Notice'],
         }),
-
-        updateNotice: builder.mutation<ApiResponse<any>, { id: string; data: Partial<NoticeRequest> }>({
-            query: ({ id, data }) => ({
-                url: `/caretaker/notices/${id}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: ['Notice'],
-        }),
-
-        deleteNotice: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/caretaker/notices/${id}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['Notice'],
-        }),
     }),
 });
 
 export const {
+    // Dashboard
     useGetCaretakerDashboardQuery,
-    useGetHostelInfoQuery,
+
+    // Complaints
     useGetCaretakerComplaintsQuery,
     useGetCaretakerComplaintByIdQuery,
     useUpdateComplaintStatusMutation,
-    useAssignComplaintMutation,
-    useAddCaretakerComplaintCommentMutation,
-    useResolveComplaintMutation,
+    useForwardComplaintToWardenMutation,
+    useAddComplaintUpdateMutation,
+
+    // Requests
+    useGetCaretakerRequestsQuery,
+    useGetCaretakerRequestByIdQuery,
+    useApproveRequestMutation,
+    useRejectRequestMutation,
+
+    // Requisitions
     useGetCaretakerRequisitionsQuery,
     useGetCaretakerRequisitionByIdQuery,
     useCreateRequisitionMutation,
-    useUpdateRequisitionMutation,
-    useSubmitRequisitionToWardenMutation,
-    useDeleteRequisitionMutation,
+    useUploadRequisitionDocumentsMutation,
+
+    // Mess Menu
+    useGetWeeklyMessMenuQuery,
+    useGetDayMenuQuery,
+    useUpdateDayMenuMutation,
+    useGetMessStatsQuery,
+
+    // Rooms
     useGetCaretakerRoomsQuery,
-    useAddRoomMutation,
+    useGetCaretakerRoomByIdQuery,
+    useCreateRoomMutation,
     useUpdateRoomMutation,
     useDeleteRoomMutation,
-    useAllotRoomMutation,
+    useGetRoomStatsQuery,
+
+    // Room Allotment
+    useSearchStudentsQuery,
+    useGetAvailableRoomsQuery,
+    useAllocateRoomMutation,
+    useAutoAllocateRoomsMutation,
+    useGetRecentAllocationsQuery,
     useDeallocateRoomMutation,
-    useGetCaretakerMessMenuQuery,
-    useCreateMessMenuMutation,
-    useUpdateMessMenuMutation,
-    useDeleteMessMenuMutation,
-    useGetCaretakerRequestsQuery,
-    useGetCaretakerStudentsQuery,
-    useGetCaretakerNoticesQuery,
-    useSendNoticeMutation,
-    useUpdateNoticeMutation,
-    useDeleteNoticeMutation,
+
+    // Notifications
+    useGetCaretakerNotificationsQuery,
+    useMarkNotificationAsReadMutation,
+    useMarkAllNotificationsAsReadMutation,
+
+    // Additional
+    useGetAllStudentsQuery,
+    useSendNoticeToStudentsMutation,
 } = caretakerApi;

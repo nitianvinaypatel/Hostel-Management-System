@@ -42,7 +42,7 @@ export default function WardenOccupancyReport() {
                         </Link>
                         <div>
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent mb-2">
-                                Occupancy Report 🏠
+                                Occupancy Report
                             </h1>
                             <p className="text-muted-foreground text-lg">Hostel A - Current occupancy status</p>
                         </div>

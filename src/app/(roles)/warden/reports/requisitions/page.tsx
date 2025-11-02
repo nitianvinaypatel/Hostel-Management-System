@@ -46,7 +46,7 @@ export default function WardenRequisitionsReport() {
                         </Link>
                         <div>
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent mb-2">
-                                Requisitions Report 📝
+                                Requisitions Report
                             </h1>
                             <p className="text-muted-foreground text-lg">Caretaker requisitions and approval status</p>
                         </div>

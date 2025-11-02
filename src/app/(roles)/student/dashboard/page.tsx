@@ -10,48 +10,36 @@ import {
     DoorOpen,
     FileText,
     MessageSquare,
-    Phone,
-    TrendingUp,
     Loader2,
+    Utensils,
+    Coffee,
+    Sun,
+    Sunset,
+    Moon,
 } from "lucide-react"
-import { studentService } from "@/services/student.service"
-import type { StudentDashboardData, Notice, Activity } from "@/types/student"
+import type { StudentDashboardData, Notice } from "@/types/student"
+import { useGetStudentDashboardQuery, useGetTodayMessMenuQuery } from "@/store/api/studentApi"
+import { AlertCircle } from "lucide-react"
 
 export default function StudentDashboard() {
     const [currentTime, setCurrentTime] = useState(new Date())
     const scrollRef = useRef<HTMLDivElement>(null)
-    const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
 
     // Get user from Redux store
     const { user } = useAppSelector((state) => state.auth)
 
+    // Fetch dashboard data using RTK Query
+    const { data: dashboardResponse, isLoading: loading, error } = useGetStudentDashboardQuery()
+    const dashboardData = dashboardResponse?.data
+
+    // Fetch today's mess menu
+    const { data: messMenuResponse } = useGetTodayMessMenuQuery()
+    const todayMenu = messMenuResponse?.data
+
     // Get first name from full name
     const firstName = dashboardData?.user?.name?.split(' ')[0] || user?.name?.split(' ')[0] || 'Student'
 
-    useEffect(() => {
-        fetchDashboardData()
-    }, [])
-
-    const fetchDashboardData = async () => {
-        try {
-            setLoading(true)
-            setError(null)
-            const response = await studentService.getDashboard()
-            if (response.success) {
-                setDashboardData(response.data)
-            }
-        } catch (err) {
-            setError('Failed to load dashboard data')
-            console.error('Dashboard error:', err)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const notices: Notice[] = dashboardData?.latestNotices || []
-    const recentActivity: Activity[] = dashboardData?.recentActivity || []
+    const notices = (dashboardData?.latestNotices || []) as Notice[]
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -120,38 +108,24 @@ export default function StudentDashboard() {
         }
     }
 
-    const getActivityIcon = (type: string) => {
-        switch (type) {
-            case "request":
-                return <FileText className="h-4 w-4" />
-            case "complaint":
-                return <MessageSquare className="h-4 w-4" />
-            case "payment":
-                return <CreditCard className="h-4 w-4" />
-            case "notice":
-                return <Bell className="h-4 w-4" />
-            default:
-                return <FileText className="h-4 w-4" />
-        }
-    }
 
-    const getStatusColor = (status?: string) => {
-        switch (status) {
-            case "approved":
-                return "text-green-500"
-            case "pending":
-                return "text-yellow-500"
-            case "in-progress":
-                return "text-blue-500"
-            default:
-                return "text-muted-foreground"
-        }
-    }
 
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="text-center">
+                    <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-lg text-gray-600 dark:text-gray-400">Failed to load dashboard</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Please try refreshing the page</p>
+                </div>
             </div>
         )
     }
@@ -164,7 +138,7 @@ export default function StudentDashboard() {
                 <div className="relative flex items-center justify-between">
                     <div className="space-y-2">
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-                            Welcome Back, {firstName}! 👋
+                            Welcome Back, {firstName}!
                         </h1>
                         <p className="text-muted-foreground text-lg">
                             {currentTime.toLocaleDateString("en-US", {
@@ -196,10 +170,18 @@ export default function StudentDashboard() {
                             <FileText className="h-7 w-7 text-white" />
                         </div>
                     </div>
-                    <p className="text-4xl font-bold mb-2 text-blue-900 dark:text-blue-100">3</p>
+                    <p className="text-4xl font-bold mb-2 text-blue-900 dark:text-blue-100">
+                        {dashboardData?.stats?.myRequests?.total || 0}
+                    </p>
                     <div className="flex items-center gap-3 text-xs font-medium">
-                        <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400"><span className="h-1.5 w-1.5 rounded-full bg-yellow-500 animate-pulse" /> 2 pending</span>
-                        <span className="flex items-center gap-1 text-green-600 dark:text-green-400"><span className="h-1.5 w-1.5 rounded-full bg-green-500" /> 1 approved</span>
+                        <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-yellow-500 animate-pulse" />
+                            {dashboardData?.stats?.myRequests?.pending || 0} pending
+                        </span>
+                        <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                            {dashboardData?.stats?.myRequests?.approved || 0} approved
+                        </span>
                     </div>
                 </Link>
 
@@ -211,20 +193,13 @@ export default function StudentDashboard() {
                             <MessageSquare className="h-7 w-7 text-white" />
                         </div>
                     </div>
-                    <p className="text-4xl font-bold mb-2 text-purple-900 dark:text-purple-100">1</p>
-                    <p className="text-xs font-medium flex items-center gap-1 text-blue-600 dark:text-blue-400"><span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" /> In progress</p>
-                </Link>
-
-                <Link href="/student/payments" className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/50 dark:to-red-900/30 backdrop-blur-xl border border-red-200/50 dark:border-red-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-red-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-400/0 to-red-600/0 group-hover:from-red-400/10 group-hover:to-red-600/5 transition-all duration-300" />
-                    <div className="relative flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-semibold text-red-700 dark:text-red-300">Pending Payments</h3>
-                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-red-500/50">
-                            <CreditCard className="h-7 w-7 text-white" />
-                        </div>
-                    </div>
-                    <p className="text-4xl font-bold mb-2 text-red-900 dark:text-red-100">₹5,000</p>
-                    <p className="text-xs font-medium flex items-center gap-1 text-red-600 dark:text-red-400"><span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" /> Due in 5 days</p>
+                    <p className="text-4xl font-bold mb-2 text-purple-900 dark:text-purple-100">
+                        {dashboardData?.stats?.complaints?.total || 0}
+                    </p>
+                    <p className="text-xs font-medium flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                        {dashboardData?.stats?.complaints?.inProgress || 0} in progress
+                    </p>
                 </Link>
 
                 <Link href="/student/room-allotment" className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30 backdrop-blur-xl border border-green-200/50 dark:border-green-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-green-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
@@ -235,140 +210,186 @@ export default function StudentDashboard() {
                             <DoorOpen className="h-7 w-7 text-white" />
                         </div>
                     </div>
-                    <p className="text-4xl font-bold mb-2 text-green-900 dark:text-green-100">204</p>
-                    <p className="text-xs font-medium text-green-700 dark:text-green-400">Hostel A, 2nd Floor</p>
+                    <p className="text-4xl font-bold mb-2 text-green-900 dark:text-green-100">
+                        {dashboardData?.stats?.roomDetails?.roomNumber || 'N/A'}
+                    </p>
+                    <p className="text-xs font-medium text-green-700 dark:text-green-400">
+                        {dashboardData?.stats?.roomDetails?.hostelName
+                            ? `${dashboardData.stats.roomDetails.hostelName}${dashboardData.stats.roomDetails.floor ? `, ${dashboardData.stats.roomDetails.floor}${dashboardData.stats.roomDetails.floor === 1 ? 'st' : dashboardData.stats.roomDetails.floor === 2 ? 'nd' : dashboardData.stats.roomDetails.floor === 3 ? 'rd' : 'th'} Floor` : ''}`
+                            : 'Not Allotted'}
+                    </p>
+                </Link>
+
+                <Link href="/student/payments" className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/50 dark:to-red-900/30 backdrop-blur-xl border border-red-200/50 dark:border-red-800/50 rounded-2xl p-6 hover:shadow-2xl hover:shadow-red-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-400/0 to-red-600/0 group-hover:from-red-400/10 group-hover:to-red-600/5 transition-all duration-300" />
+                    <div className="relative flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-red-700 dark:text-red-300">Pending Payments</h3>
+                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-red-500/50">
+                            <CreditCard className="h-7 w-7 text-white" />
+                        </div>
+                    </div>
+                    <p className="text-4xl font-bold mb-2 text-red-900 dark:text-red-100">
+                        ₹{dashboardData?.stats?.pendingPayments?.total?.toLocaleString('en-IN') || '0'}
+                    </p>
+                    <p className="text-xs font-medium flex items-center gap-1 text-red-600 dark:text-red-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                        {dashboardData?.stats?.pendingPayments?.nextDueDate
+                            ? `Due ${new Date(dashboardData.stats.pendingPayments.nextDueDate).toLocaleDateString()}`
+                            : 'No pending payments'}
+                    </p>
                 </Link>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold flex items-center gap-3 dark:text-white">
-                                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/50">
-                                    <Bell className="h-5 w-5 text-white" />
-                                </div>
-                                <span>Latest Notices</span>
-                                {notices.filter((n) => n.isNew).length > 0 && (
-                                    <span className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold shadow-lg shadow-red-500/50 animate-pulse">
-                                        {notices.filter((n) => n.isNew).length} New
-                                    </span>
-                                )}
-                            </h3>
-                            <Link href="/student/notices">
-                                <Button variant="outline" size="sm" className=" text-white transition-colors">
-                                    View All
-                                </Button>
-                            </Link>
-                        </div>
-                        <div ref={scrollRef} className="space-y-3 max-h-[300px] overflow-y-auto pr-2 scroll-smooth scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                            {/* Render notices twice for seamless loop */}
-                            {[...notices, ...notices].map((notice, index) => (
-                                <div
-                                    key={`${notice.id}-${index}`}
-                                    className="group relative bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 transition-all duration-300"
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                                {notice.isNew && (
-                                                    <span className="relative flex h-2.5 w-2.5">
-                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                                                    </span>
-                                                )}
-                                                <span
-                                                    className={`text-xs px-2.5 py-1 rounded-full border font-semibold ${getCategoryColor(
-                                                        notice.category ?? "general"
-                                                    )}`}
-                                                >
-                                                    {notice.category}
-                                                </span>
-                                                <span className="text-xs text-muted-foreground font-medium">
-                                                    {new Date(notice.date ?? new Date()).toLocaleDateString()}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">{notice.title}</p>
-                                        </div>
+            <div className="grid gap-6 lg:grid-cols-2">
+                {/* Today's Mess Menu Preview */}
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold flex items-center gap-3 dark:text-white">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/50">
+                                <Utensils className="h-5 w-5 text-white" />
+                            </div>
+                            <span>Today's Mess Menu</span>
+                            <span className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-lg">
+                                {currentTime.toLocaleDateString("en-US", { weekday: "long" })}
+                            </span>
+                        </h3>
+                        <Link href="/student/mess-menu">
+                            <Button variant="outline" size="sm" className="text-black dark:text-white transition-colors">
+                                Full Menu
+                            </Button>
+                        </Link>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {/* Breakfast */}
+                        <div className="p-4 rounded-xl bg-gradient-to-br from-orange-50/80 to-amber-50/80 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200/50 dark:border-orange-800/50 hover:scale-105 transition-transform">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Coffee className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                                <h4 className="font-bold text-orange-900 dark:text-orange-100">Breakfast</h4>
+                                <span className="text-xs text-orange-600 dark:text-orange-400 ml-auto">
+                                    {todayMenu?.breakfast?.time || '7:30 - 9:30 AM'}
+                                </span>
+                            </div>
+                            <div className="space-y-1">
+                                {(todayMenu?.breakfast?.items || ["Idli", "Sambar", "Chutney", "Tea/Coffee"]).map((item: string, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2 text-sm">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                                        <span className="text-gray-800 dark:text-gray-200">{item}</span>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Lunch */}
+                        <div className="p-4 rounded-xl bg-gradient-to-br from-yellow-50/80 to-amber-50/80 dark:from-yellow-950/30 dark:to-amber-950/30 border border-yellow-200/50 dark:border-yellow-800/50 hover:scale-105 transition-transform">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Sun className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                                <h4 className="font-bold text-yellow-900 dark:text-yellow-100">Lunch</h4>
+                                <span className="text-xs text-yellow-600 dark:text-yellow-400 ml-auto">
+                                    {todayMenu?.lunch?.time || '12:30 - 2:30 PM'}
+                                </span>
+                            </div>
+                            <div className="space-y-1">
+                                {(todayMenu?.lunch?.items || ["Rice", "Dal", "Paneer Curry", "Roti", "Salad"]).map((item: string, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2 text-sm">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
+                                        <span className="text-gray-800 dark:text-gray-200">{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Snacks */}
+                        <div className="p-4 rounded-xl bg-gradient-to-br from-pink-50/80 to-rose-50/80 dark:from-pink-950/30 dark:to-rose-950/30 border border-pink-200/50 dark:border-pink-800/50 hover:scale-105 transition-transform">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Sunset className="h-5 w-5 text-pink-600 dark:text-pink-400" />
+                                <h4 className="font-bold text-pink-900 dark:text-pink-100">Snacks</h4>
+                                <span className="text-xs text-pink-600 dark:text-pink-400 ml-auto">
+                                    {todayMenu?.snacks?.time || '4:30 - 5:30 PM'}
+                                </span>
+                            </div>
+                            <div className="space-y-1">
+                                {(todayMenu?.snacks?.items || ["Samosa", "Tea"]).map((item: string, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2 text-sm">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-pink-500" />
+                                        <span className="text-gray-800 dark:text-gray-200">{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Dinner */}
+                        <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200/50 dark:border-blue-800/50 hover:scale-105 transition-transform">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Moon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                <h4 className="font-bold text-blue-900 dark:text-blue-100">Dinner</h4>
+                                <span className="text-xs text-blue-600 dark:text-blue-400 ml-auto">
+                                    {todayMenu?.dinner?.time || '7:30 - 9:30 PM'}
+                                </span>
+                            </div>
+                            <div className="space-y-1">
+                                {(todayMenu?.dinner?.items || ["Rice", "Rajma", "Roti", "Curd"]).map((item: string, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2 text-sm">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                                        <span className="text-gray-800 dark:text-gray-200">{item}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-6">
-                    <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                        <h3 className="text-xl font-bold mb-5 flex items-center gap-3 dark:text-white">
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/50">
-                                <TrendingUp className="h-5 w-5 text-white" />
+                {/* Latest Notices */}
+                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold flex items-center gap-3 dark:text-white">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/50">
+                                <Bell className="h-5 w-5 text-white" />
                             </div>
-                            <span>Recent Activity</span>
+                            <span>Latest Notices</span>
+                            {notices.filter((n) => n.isNew).length > 0 && (
+                                <span className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold shadow-lg shadow-red-500/50 animate-pulse">
+                                    {notices.filter((n) => n.isNew).length} New
+                                </span>
+                            )}
                         </h3>
-                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                            {recentActivity.map((activity) => (
-                                <div
-                                    key={activity.id}
-                                    className="group flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-transparent hover:border-primary/30 transition-all duration-300 hover:scale-[1.02]"
-                                >
-                                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md">
-                                        {getActivityIcon(activity.type)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold truncate text-gray-900 dark:text-gray-100">{activity.title}</p>
-                                        <div className="flex items-center gap-2 mt-1.5">
-                                            <p className="text-xs text-muted-foreground font-medium">{activity.time}</p>
-                                            {activity.status && (
-                                                <>
-                                                    <span className="text-xs text-muted-foreground">•</span>
-                                                    <span className={`text-xs font-semibold ${getStatusColor(activity.status)}`}>
-                                                        {activity.status}
-                                                    </span>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <Link href="/student/notices">
+                            <Button variant="outline" size="sm" className=" dark:text-white transition-colors">
+                                View All
+                            </Button>
+                        </Link>
                     </div>
-
-                    <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                        <h3 className="text-xl font-bold mb-5 flex items-center gap-3 dark:text-white">
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-red-500 flex items-center justify-center shadow-lg shadow-rose-500/50">
-                                <Phone className="h-5 w-5 text-white" />
-                            </div>
-                            <span>Emergency Contacts</span>
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="group flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-amber-50/80 to-orange-50/80 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200/50 dark:border-amber-800/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
-                                <div>
-                                    <p className="text-sm font-bold text-amber-900 dark:text-amber-100">Hostel Warden</p>
-                                    <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">+91 XXXXX XXXXX</p>
+                    <div ref={scrollRef} className="space-y-3 max-h-[300px] overflow-y-auto pr-2 scroll-smooth scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                        {/* Render notices twice for seamless loop */}
+                        {[...notices, ...notices].map((notice, index) => (
+                            <div
+                                key={`${notice.id}-${index}`}
+                                className="group relative bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 transition-all duration-300"
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                            {notice.isNew && (
+                                                <span className="relative flex h-2.5 w-2.5">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                                </span>
+                                            )}
+                                            <span
+                                                className={`text-xs px-2.5 py-1 rounded-full border font-semibold ${getCategoryColor(
+                                                    notice.category ?? "general"
+                                                )}`}
+                                            >
+                                                {notice.category}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground font-medium">
+                                                {new Date(notice.date ?? new Date()).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">{notice.title}</p>
+                                    </div>
                                 </div>
-                                <Button size="sm" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-md hover:shadow-lg transition-all">
-                                    Call
-                                </Button>
                             </div>
-                            <div className="group flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-blue-50/80 to-cyan-50/80 dark:from-blue-950/30 dark:to-cyan-950/30 border border-blue-200/50 dark:border-blue-800/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
-                                <div>
-                                    <p className="text-sm font-bold text-blue-900 dark:text-blue-100">Security</p>
-                                    <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">+91 XXXXX XXXXX</p>
-                                </div>
-                                <Button size="sm" className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-md hover:shadow-lg transition-all">
-                                    Call
-                                </Button>
-                            </div>
-                            <div className="group flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-red-50/80 to-rose-50/80 dark:from-red-950/30 dark:to-rose-950/30 border border-red-200/50 dark:border-red-800/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
-                                <div>
-                                    <p className="text-sm font-bold text-red-900 dark:text-red-100">Medical Emergency</p>
-                                    <p className="text-xs text-red-700 dark:text-red-400 font-medium">+91 XXXXX XXXXX</p>
-                                </div>
-                                <Button size="sm" className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white border-0 shadow-md hover:shadow-lg transition-all">
-                                    Call
-                                </Button>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>

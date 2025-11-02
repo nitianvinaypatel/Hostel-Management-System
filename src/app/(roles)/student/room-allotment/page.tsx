@@ -1,20 +1,19 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { BackButton } from "@/components/common/back-button"
+import Link from "next/link"
 import {
     DoorOpen,
     Building2,
     Users,
     CheckCircle,
     FileText,
-    AlertTriangle,
     Phone,
     Bed,
     Wifi,
     Fan,
     Droplet,
-    Download,
+    ArrowLeft,
 } from "lucide-react"
 
 type RoomDetails = {
@@ -57,19 +56,30 @@ export default function RoomAllotment() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <BackButton />
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 dark:from-green-500/20 dark:via-emerald-500/20 dark:to-teal-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-green-400/30 to-emerald-400/30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-teal-400/30 to-cyan-400/30 rounded-full blur-3xl animate-pulse" />
-                <div className="relative flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-2xl shadow-green-500/50">
-                        <DoorOpen className="h-8 w-8 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
-                            Room Allotment
-                        </h1>
-                        <p className="text-muted-foreground mt-1 text-lg">Your hostel room details and information</p>
+                <div className="relative">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Link href="/student/dashboard">
+                                <Button variant="outline" size="icon" className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                                    <ArrowLeft className="h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <div className="space-y-2">
+                                <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
+                                    Room Allotment
+                                </h1>
+                                <p className="text-muted-foreground text-lg">Your hostel room details and information</p>
+                            </div>
+                        </div>
+                        <Link href="/student/requests">
+                            <Button className="h-12 px-6 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2">
+                                <DoorOpen className="h-5 w-5" />
+                                Request Room Change
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>

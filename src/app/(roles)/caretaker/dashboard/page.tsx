@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
     Building2,
@@ -10,69 +9,85 @@ import {
     ClipboardList,
     DoorOpen,
     CheckCircle2,
-    RefreshCw,
     Bed,
     XCircle,
-    Clock
+    Clock,
+    Loader2
 } from "lucide-react"
+import { useGetCaretakerDashboardQuery } from "@/store/api/caretakerApi"
 
 export default function CaretakerDashboard() {
     const [currentTime, setCurrentTime] = useState(new Date())
+    const { data: dashboardData, isLoading, error } = useGetCaretakerDashboardQuery()
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
         return () => clearInterval(timer)
     }, [])
 
-    const stats = {
-        totalRooms: 150,
-        occupiedRooms: 120,
-        availableRooms: 30,
-        pendingComplaints: 8,
-        urgentComplaints: 2,
-        pendingRequests: 5,
-        resolvedToday: 12,
-        occupancyRate: 80
+    // Extract stats from API response or use defaults
+    const stats = dashboardData?.data?.stats ? {
+        totalRooms: dashboardData.data.stats.totalRooms || 0,
+        occupiedRooms: dashboardData.data.stats.occupiedRooms || 0,
+        availableRooms: dashboardData.data.stats.availableRooms || 0,
+        pendingComplaints: dashboardData.data.stats.pendingComplaints || 0,
+        urgentComplaints: dashboardData.data.stats.urgentComplaints || 0,
+        pendingRequests: dashboardData.data.stats.pendingRequests || 0,
+        resolvedToday: dashboardData.data.stats.resolvedToday || 0,
+        occupancyRate: Math.round(dashboardData.data.stats.occupancyRate || 0)
+    } : {
+        totalRooms: 0,
+        occupiedRooms: 0,
+        availableRooms: 0,
+        pendingComplaints: 0,
+        urgentComplaints: 0,
+        pendingRequests: 0,
+        resolvedToday: 0,
+        occupancyRate: 0
     }
 
-    const recentActivities = [
-        {
-            id: 1,
-            type: "allocation",
-            title: "Room 205 allocated",
-            description: "Student #12345 assigned to Room 205",
-            time: "2 hours ago",
-            icon: DoorOpen,
-            color: "blue"
-        },
-        {
-            id: 2,
-            type: "resolved",
-            title: "Complaint resolved",
-            description: "Water leakage in Room 101 fixed",
-            time: "5 hours ago",
-            icon: CheckCircle2,
-            color: "green"
-        },
-        {
-            id: 3,
-            type: "requisition",
-            title: "Requisition approved",
-            description: "AC repair requisition approved by warden",
-            time: "1 day ago",
-            icon: ClipboardList,
-            color: "purple"
-        },
-        {
-            id: 4,
-            type: "complaint",
-            title: "New complaint filed",
-            description: "Electrical issue reported in Room 308",
-            time: "2 days ago",
-            icon: AlertCircle,
-            color: "orange"
+    // Extract recent activities from API response
+    const recentActivities = dashboardData?.data?.recentActivities || []
+
+    // Map activity types to icons
+    const getActivityIcon = (type: string) => {
+        switch (type) {
+            case 'allocation':
+            case 'room_allocation':
+                return DoorOpen
+            case 'resolved':
+            case 'complaint_resolved':
+                return CheckCircle2
+            case 'requisition':
+            case 'requisition_approved':
+                return ClipboardList
+            case 'complaint':
+            case 'new_complaint':
+                return AlertCircle
+            case 'request':
+                return ClipboardList
+            default:
+                return Clock
         }
-    ]
+    }
+
+    // Format time ago
+    const formatTimeAgo = (timestamp: string) => {
+        const date = new Date(timestamp)
+        const now = new Date()
+        const diffInMs = now.getTime() - date.getTime()
+        const diffInMinutes = Math.floor(diffInMs / 60000)
+        const diffInHours = Math.floor(diffInMs / 3600000)
+        const diffInDays = Math.floor(diffInMs / 86400000)
+
+        if (diffInMinutes < 60) {
+            return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`
+        } else if (diffInHours < 24) {
+            return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`
+        } else {
+            return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`
+        }
+    }
 
     const statCards = [
         {
@@ -155,6 +170,30 @@ export default function CaretakerDashboard() {
         },
     ]
 
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center space-y-4">
+                    <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+                    <p className="text-muted-foreground">Loading dashboard...</p>
+                </div>
+            </div>
+        )
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center space-y-4">
+                    <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
+                    <p className="text-muted-foreground">Failed to load dashboard data</p>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header Banner */}
@@ -164,7 +203,7 @@ export default function CaretakerDashboard() {
                 <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-2">
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">
-                            Caretaker Dashboard 🏢
+                            Caretaker Dashboard
                         </h1>
                         <p className="text-muted-foreground text-lg">
                             {currentTime.toLocaleDateString("en-US", {
@@ -185,10 +224,6 @@ export default function CaretakerDashboard() {
                             </div>
                             <p className="text-xs text-muted-foreground font-medium">Current Time</p>
                         </div>
-                        <Button variant="outline" className="gap-2">
-                            <RefreshCw className="h-4 w-4" />
-                            Refresh
-                        </Button>
                     </div>
                 </div>
             </div>
@@ -250,24 +285,34 @@ export default function CaretakerDashboard() {
                     </h3>
                 </div>
                 <div className="space-y-3">
-                    {recentActivities.map((activity) => (
-                        <div
-                            key={activity.id}
-                            className="group flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-transparent hover:border-primary/30 transition-all duration-300 hover:scale-[1.02]"
-                        >
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md">
-                                <activity.icon className="h-4 w-4" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{activity.title}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{activity.description}</p>
-                                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                    <Clock className="h-3 w-3" />
-                                    {activity.time}
-                                </p>
-                            </div>
+                    {recentActivities.length > 0 ? (
+                        recentActivities.map((activity: any, index: number) => {
+                            const ActivityIcon = getActivityIcon(activity.type)
+                            return (
+                                <div
+                                    key={activity.id || index}
+                                    className="group flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-transparent hover:border-primary/30 transition-all duration-300 hover:scale-[1.02]"
+                                >
+                                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md">
+                                        <ActivityIcon className="h-4 w-4" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{activity.title}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">{activity.description}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {activity.time ? formatTimeAgo(activity.time) : 'Recently'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )
+                        })
+                    ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p>No recent activities</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
         </div>

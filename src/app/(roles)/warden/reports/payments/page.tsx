@@ -51,7 +51,7 @@ export default function WardenPaymentsReport() {
                         </Link>
                         <div>
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent mb-2">
-                                Payments Report 💰
+                                Payments Report
                             </h1>
                             <p className="text-muted-foreground text-lg">Fee collection and outstanding payments</p>
                         </div>

@@ -84,9 +84,22 @@ export const authApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Auth'],
         }),
-        getCurrentUser: builder.query<User, void>({
+        getCurrentUser: builder.query<{ success: boolean; data: User }, void>({
             query: () => '/auth/me',
             providesTags: ['Auth', 'User'],
+            transformResponse: (response: any) => {
+                // Backend returns { success, data: { user: {...} } }
+                // We need to extract the user object
+                if (response?.data?.user) {
+                    return { success: response.success, data: response.data.user };
+                }
+                // Fallback for other response structures
+                if (response?.data) {
+                    return response;
+                }
+                // If response is already a User object, wrap it
+                return { success: true, data: response };
+            },
         }),
         updateProfile: builder.mutation<User, Partial<User>>({
             query: (data) => ({

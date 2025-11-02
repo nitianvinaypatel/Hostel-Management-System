@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { BackButton } from "@/components/common/back-button"
+import Link from "next/link"
 import {
     CreditCard,
     Download,
@@ -13,6 +13,7 @@ import {
     Smartphone,
     Building2,
     Wallet,
+    ArrowLeft,
 } from "lucide-react"
 
 type Payment = {
@@ -106,19 +107,22 @@ export default function StudentPayments() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <BackButton />
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-cyan-500/10 dark:from-emerald-500/20 dark:via-teal-500/20 dark:to-cyan-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-emerald-400/30 to-teal-400/30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-cyan-400/30 to-blue-400/30 rounded-full blur-3xl animate-pulse" />
-                <div className="relative flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-2xl shadow-emerald-500/50">
-                        <CreditCard className="h-8 w-8 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
-                            Payments
-                        </h1>
-                        <p className="text-muted-foreground mt-1 text-lg">Manage your hostel and mess payments</p>
+                <div className="relative">
+                    <div className="flex items-center gap-4">
+                        <Link href="/student/dashboard">
+                            <Button variant="outline" size="icon" className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <div className="space-y-2">
+                            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
+                                Payments
+                            </h1>
+                            <p className="text-muted-foreground text-lg">Manage your hostel and mess payments</p>
+                        </div>
                     </div>
                 </div>
             </div>

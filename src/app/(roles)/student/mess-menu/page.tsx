@@ -1,8 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { BackButton } from "@/components/common/back-button"
-import { Utensils, Clock, Coffee, Sun, Sunset, Moon, Phone, Mail, Info } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Utensils, Clock, Coffee, Sun, Sunset, Moon, Phone, Mail, Info, ArrowLeft, Loader2, AlertCircle } from "lucide-react"
+import {
+    useGetMessMenuQuery,
+    useGetTodayMessMenuQuery,
+    useGetMessInfoQuery
+} from '@/store/api/studentApi'
 
 type MenuItem = {
     day: string
@@ -13,84 +19,72 @@ type MenuItem = {
 }
 
 export default function StudentMessMenu() {
-    const [selectedDay, setSelectedDay] = useState("Monday")
+    const [selectedDay, setSelectedDay] = useState(new Date().toLocaleDateString('en-US', { weekday: 'long' }))
 
-    const weekMenu: MenuItem[] = [
-        {
-            day: "Monday",
-            breakfast: ["Idli", "Sambar", "Chutney", "Tea/Coffee"],
-            lunch: ["Rice", "Dal", "Paneer Curry", "Roti", "Salad"],
-            snacks: ["Samosa", "Tea"],
-            dinner: ["Rice", "Rajma", "Roti", "Curd"],
-        },
-        {
-            day: "Tuesday",
-            breakfast: ["Poha", "Jalebi", "Tea/Coffee"],
-            lunch: ["Rice", "Dal", "Chicken Curry", "Roti", "Salad"],
-            snacks: ["Pakora", "Tea"],
-            dinner: ["Rice", "Mixed Veg", "Roti", "Raita"],
-        },
-        {
-            day: "Wednesday",
-            breakfast: ["Upma", "Banana", "Tea/Coffee"],
-            lunch: ["Rice", "Sambar", "Fish Fry", "Roti", "Salad"],
-            snacks: ["Bread Pakora", "Tea"],
-            dinner: ["Rice", "Chole", "Roti", "Pickle"],
-        },
-        {
-            day: "Thursday",
-            breakfast: ["Paratha", "Curd", "Pickle", "Tea/Coffee"],
-            lunch: ["Rice", "Dal", "Egg Curry", "Roti", "Salad"],
-            snacks: ["Vada", "Tea"],
-            dinner: ["Rice", "Kadhi", "Roti", "Papad"],
-        },
-        {
-            day: "Friday",
-            breakfast: ["Dosa", "Sambar", "Chutney", "Tea/Coffee"],
-            lunch: ["Biryani", "Raita", "Salad"],
-            snacks: ["Cutlet", "Tea"],
-            dinner: ["Rice", "Dal Makhani", "Roti", "Sweet"],
-        },
-        {
-            day: "Saturday",
-            breakfast: ["Puri", "Aloo Sabzi", "Tea/Coffee"],
-            lunch: ["Rice", "Dal", "Paneer Butter Masala", "Roti", "Salad"],
-            snacks: ["Sandwich", "Tea"],
-            dinner: ["Rice", "Palak Paneer", "Roti", "Curd"],
-        },
-        {
-            day: "Sunday",
-            breakfast: ["Bread", "Omelette", "Butter", "Tea/Coffee"],
-            lunch: ["Special Thali", "Sweet Dish"],
-            snacks: ["Cake", "Tea"],
-            dinner: ["Rice", "Dal", "Mixed Veg", "Roti", "Ice Cream"],
-        },
-    ]
+    // Fetch mess menu from API
+    const { data: menuData, isLoading: loadingMenu, error: menuError } = useGetMessMenuQuery()
+    const { data: todayData, isLoading: loadingToday } = useGetTodayMessMenuQuery()
+    const { data: infoData, isLoading: loadingInfo } = useGetMessInfoQuery()
 
-    const currentMenu = weekMenu.find((m) => m.day === selectedDay) || weekMenu[0]
+    console.log('Mess Menu Data:', menuData)
+    console.log('Today Menu:', todayData)
+    console.log('Mess Info:', infoData)
+
+    const weekMenu = menuData?.data?.menu || []
+    const messInfo = infoData?.data || {}
+
+    const currentMenu = weekMenu.find((m: any) => m.day === selectedDay) || weekMenu[0] || {
+        day: selectedDay,
+        breakfast: [],
+        lunch: [],
+        snacks: [],
+        dinner: []
+    }
+
+    if (loadingMenu) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (menuError) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="text-center">
+                    <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-lg text-gray-600 dark:text-gray-400">Failed to load mess menu</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
-        <div className="space-y-4 animate-in fade-in duration-500">
-            <BackButton />
+        <div className="space-y-6 animate-in fade-in duration-500">
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500/10 via-amber-500/10 to-yellow-500/10 dark:from-orange-500/20 dark:via-amber-500/20 dark:to-yellow-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-orange-400/30 to-amber-400/30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-yellow-400/30 to-orange-400/30 rounded-full blur-3xl animate-pulse" />
-                <div className="relative flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-2xl shadow-orange-500/50">
-                        <Utensils className="h-8 w-8 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent">
-                            Mess Menu
-                        </h1>
-                        <p className="text-muted-foreground mt-1 text-lg">Weekly meal schedule for hostel mess</p>
+                <div className="relative">
+                    <div className="flex items-center gap-4">
+                        <Link href="/student/dashboard">
+                            <Button variant="outline" size="icon" className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <div className="space-y-2">
+                            <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent">
+                                Mess Menu
+                            </h1>
+                            <p className="text-muted-foreground text-lg">Weekly meal schedule for hostel mess</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-6 shadow-lg">
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                    {weekMenu.map((menu) => (
+                    {weekMenu.map((menu: any) => (
                         <button
                             key={menu.day}
                             onClick={() => setSelectedDay(menu.day)}
@@ -114,7 +108,7 @@ export default function StudentMessMenu() {
                         <h3 className="text-xl font-bold text-orange-900 dark:text-orange-100">Breakfast</h3>
                     </div>
                     <ul className="space-y-3">
-                        {currentMenu.breakfast.map((item, idx) => (
+                        {currentMenu.breakfast.map((item: any, idx: number) => (
                             <li key={idx} className="flex items-center gap-3 text-sm font-medium p-2 rounded-lg bg-white/60 dark:bg-gray-900/40 hover:scale-105 transition-transform">
                                 <div className="h-2 w-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500" />
                                 <span className="text-gray-800 dark:text-gray-200">{item}</span>
@@ -135,7 +129,7 @@ export default function StudentMessMenu() {
                         <h3 className="text-xl font-bold text-yellow-900 dark:text-yellow-100">Lunch</h3>
                     </div>
                     <ul className="space-y-3">
-                        {currentMenu.lunch.map((item, idx) => (
+                        {currentMenu.lunch.map((item: any, idx: number) => (
                             <li key={idx} className="flex items-center gap-3 text-sm font-medium p-2 rounded-lg bg-white/60 dark:bg-gray-900/40 hover:scale-105 transition-transform">
                                 <div className="h-2 w-2 rounded-full bg-gradient-to-r from-yellow-500 to-amber-500" />
                                 <span className="text-gray-800 dark:text-gray-200">{item}</span>
@@ -156,7 +150,7 @@ export default function StudentMessMenu() {
                         <h3 className="text-xl font-bold text-pink-900 dark:text-pink-100">Snacks</h3>
                     </div>
                     <ul className="space-y-3">
-                        {currentMenu.snacks.map((item, idx) => (
+                        {currentMenu.snacks.map((item: any, idx: number) => (
                             <li key={idx} className="flex items-center gap-3 text-sm font-medium p-2 rounded-lg bg-white/60 dark:bg-gray-900/40 hover:scale-105 transition-transform">
                                 <div className="h-2 w-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-500" />
                                 <span className="text-gray-800 dark:text-gray-200">{item}</span>
@@ -177,7 +171,7 @@ export default function StudentMessMenu() {
                         <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100">Dinner</h3>
                     </div>
                     <ul className="space-y-3">
-                        {currentMenu.dinner.map((item, idx) => (
+                        {currentMenu.dinner.map((item: any, idx: number) => (
                             <li key={idx} className="flex items-center gap-3 text-sm font-medium p-2 rounded-lg bg-white/60 dark:bg-gray-900/40 hover:scale-105 transition-transform">
                                 <div className="h-2 w-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500" />
                                 <span className="text-gray-800 dark:text-gray-200">{item}</span>
@@ -211,11 +205,11 @@ export default function StudentMessMenu() {
                         <div className="space-y-3 pl-2">
                             <p className="flex items-center gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40 text-sm font-medium text-gray-800 dark:text-gray-200">
                                 <Phone className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                                Mess Manager: +91 XXXXX XXXXX
+                                Mess Manager: {messInfo.contactNumber || '+91 XXXXX XXXXX'}
                             </p>
                             <p className="flex items-center gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40 text-sm font-medium text-gray-800 dark:text-gray-200">
                                 <Mail className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                                Email: mess@hostel.edu
+                                Email: {messInfo.email || 'mess@hostel.edu'}
                             </p>
                         </div>
                     </div>
@@ -227,18 +221,29 @@ export default function StudentMessMenu() {
                             Important Notes
                         </h4>
                         <ul className="space-y-3 pl-2">
-                            <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40">
-                                <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 mt-1.5 flex-shrink-0" />
-                                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Menu subject to change</span>
-                            </li>
-                            <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40">
-                                <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 mt-1.5 flex-shrink-0" />
-                                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Special diet available on request</span>
-                            </li>
-                            <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40">
-                                <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 mt-1.5 flex-shrink-0" />
-                                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Feedback welcomed</span>
-                            </li>
+                            {messInfo.notes && messInfo.notes.length > 0 ? (
+                                messInfo.notes.map((note: string, idx: number) => (
+                                    <li key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40">
+                                        <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 mt-1.5 flex-shrink-0" />
+                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{note}</span>
+                                    </li>
+                                ))
+                            ) : (
+                                <>
+                                    <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40">
+                                        <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 mt-1.5 flex-shrink-0" />
+                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Menu subject to change</span>
+                                    </li>
+                                    <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40">
+                                        <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 mt-1.5 flex-shrink-0" />
+                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Special diet available on request</span>
+                                    </li>
+                                    <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 dark:bg-gray-900/40">
+                                        <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 mt-1.5 flex-shrink-0" />
+                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Feedback welcomed</span>
+                                    </li>
+                                </>
+                            )}
                         </ul>
                     </div>
                 </div>

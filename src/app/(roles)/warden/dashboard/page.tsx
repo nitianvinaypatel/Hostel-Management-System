@@ -2,21 +2,43 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Users, DoorOpen, AlertCircle, ClipboardList, TrendingUp, DollarSign, Utensils, MessageSquare, RefreshCw, Activity, Bell, CheckCircle2, Clock } from "lucide-react"
+import { Users, DoorOpen, AlertCircle, ClipboardList, DollarSign, Utensils, Activity, Bell, CheckCircle2, Clock, Loader2 } from "lucide-react"
 import Link from "next/link"
+import {
+    useGetWardenDashboardStatsQuery,
+    useGetWardenRecentActivitiesQuery,
+    useGetWardenPendingApprovalsQuery,
+} from "@/store/api/wardenApi"
 
 export default function WardenDashboard() {
     const [currentTime, setCurrentTime] = useState(new Date())
+
+    // Fetch dashboard data using RTK Query
+    const { data: statsData, isLoading: statsLoading } = useGetWardenDashboardStatsQuery()
+    const { data: activitiesData, isLoading: activitiesLoading } = useGetWardenRecentActivitiesQuery(10)
+    const { data: approvalsData, isLoading: approvalsLoading } = useGetWardenPendingApprovalsQuery(5)
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
         return () => clearInterval(timer)
     }, [])
 
+    // Extract data from API responses
+    const stats = statsData?.data
+    const recentActivities = activitiesData?.data || []
+    const pendingApprovals = approvalsData?.data || []
+
+    // Format currency
+    const formatCurrency = (amount: number) => {
+        if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`
+        if (amount >= 1000) return `₹${(amount / 1000).toFixed(1)}K`
+        return `₹${amount}`
+    }
+
     const statCards = [
         {
             title: "Total Students",
-            value: "210",
+            value: statsLoading ? "..." : stats?.totalStudents?.toString() || "0",
             icon: Users,
             change: "+5 from last week",
             href: "/warden/dashboard",
@@ -31,7 +53,7 @@ export default function WardenDashboard() {
         },
         {
             title: "Occupancy Rate",
-            value: "87.5%",
+            value: statsLoading ? "..." : `${stats?.occupancyRate?.toFixed(1) || 0}%`,
             icon: DoorOpen,
             change: "+2% from last week",
             href: "/warden/dashboard",
@@ -46,7 +68,7 @@ export default function WardenDashboard() {
         },
         {
             title: "Pending Approvals",
-            value: "12",
+            value: statsLoading ? "..." : stats?.pendingApprovals?.toString() || "0",
             icon: ClipboardList,
             change: "-3 from last week",
             href: "/warden/approvals",
@@ -61,7 +83,7 @@ export default function WardenDashboard() {
         },
         {
             title: "Active Complaints",
-            value: "8",
+            value: statsLoading ? "..." : stats?.activeComplaints?.toString() || "0",
             icon: AlertCircle,
             change: "-5 from last week",
             href: "/warden/approvals/complaints",
@@ -76,7 +98,7 @@ export default function WardenDashboard() {
         },
         {
             title: "Pending Requisitions",
-            value: "5",
+            value: statsLoading ? "..." : stats?.pendingRequisitions?.toString() || "0",
             icon: ClipboardList,
             change: "+2 from last week",
             href: "/warden/requisitions",
@@ -91,7 +113,7 @@ export default function WardenDashboard() {
         },
         {
             title: "Outstanding Payments",
-            value: "₹2.4L",
+            value: statsLoading ? "..." : formatCurrency(stats?.outstandingPayments || 0),
             icon: DollarSign,
             change: "-₹50K from last week",
             href: "/warden/dashboard",
@@ -106,25 +128,12 @@ export default function WardenDashboard() {
         },
     ]
 
-    const recentActivities = [
-        { action: "Room allotment approved", student: "John Doe", time: "10 mins ago", type: "approval" },
-        { action: "Complaint forwarded", student: "Jane Smith", time: "25 mins ago", type: "complaint" },
-        { action: "Requisition approved", caretaker: "Mike Johnson", time: "1 hour ago", type: "requisition" },
-        { action: "Announcement sent", message: "Mess timing change", time: "2 hours ago", type: "announcement" },
-    ]
-
-    const pendingApprovals = [
-        { type: "Room Allotment", student: "Sarah Williams", submitted: "2024-01-15" },
-        { type: "Hostel Change", student: "Robert Brown", submitted: "2024-01-15" },
-        { type: "Complaint", student: "Emily Davis", submitted: "2024-01-14" },
-    ]
-
-    const messRatings = {
-        overall: 4.2,
-        breakfast: 4.5,
-        lunch: 4.0,
-        dinner: 4.1,
-        totalFeedback: 156
+    const messRatings = stats?.messRatings || {
+        overall: 0,
+        breakfast: 0,
+        lunch: 0,
+        dinner: 0,
+        totalFeedback: 0
     }
 
     return (
@@ -136,7 +145,7 @@ export default function WardenDashboard() {
                 <div className="relative flex items-center justify-between">
                     <div className="space-y-2">
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-                            Warden Dashboard 🏠
+                            Warden Dashboard
                         </h1>
                         <p className="text-muted-foreground text-lg">
                             Hostel A - Boys Hostel
@@ -150,20 +159,14 @@ export default function WardenDashboard() {
                             })}
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className="text-right space-y-1">
-                            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent tabular-nums">
-                                {currentTime.toLocaleTimeString("en-US", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                })}
-                            </div>
-                            <p className="text-xs text-muted-foreground font-medium">Current Time</p>
+                    <div className="text-right space-y-1">
+                        <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent tabular-nums">
+                            {currentTime.toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            })}
                         </div>
-                        <Button variant="outline" className="gap-2">
-                            <RefreshCw className="h-4 w-4" />
-                            Refresh
-                        </Button>
+                        <p className="text-xs text-muted-foreground font-medium">Current Time</p>
                     </div>
                 </div>
             </div>
@@ -202,29 +205,37 @@ export default function WardenDashboard() {
                         </h3>
                     </div>
                     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                        {recentActivities.map((activity, index) => (
-                            <div
-                                key={index}
-                                className="group flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-transparent hover:border-primary/30 transition-all duration-300 hover:scale-[1.02]"
-                            >
-                                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md">
-                                    <Activity className="h-4 w-4" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{activity.action}</p>
-                                    <div className="flex items-center gap-2 mt-1.5">
-                                        <p className="text-xs text-muted-foreground font-medium">
-                                            {activity.student || activity.caretaker || activity.message}
-                                        </p>
-                                        <span className="text-xs text-muted-foreground">•</span>
-                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <Clock className="h-3 w-3" />
-                                            {activity.time}
-                                        </span>
+                        {activitiesLoading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : recentActivities.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-8">No recent activities</p>
+                        ) : (
+                            recentActivities.map((activity, index) => (
+                                <div
+                                    key={activity.id || index}
+                                    className="group flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-transparent hover:border-primary/30 transition-all duration-300 hover:scale-[1.02]"
+                                >
+                                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-md">
+                                        <Activity className="h-4 w-4" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{activity.action}</p>
+                                        <div className="flex items-center gap-2 mt-1.5">
+                                            <p className="text-xs text-muted-foreground font-medium">
+                                                {activity.student || activity.caretaker || activity.message}
+                                            </p>
+                                            <span className="text-xs text-muted-foreground">•</span>
+                                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                <Clock className="h-3 w-3" />
+                                                {activity.time}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -244,22 +255,30 @@ export default function WardenDashboard() {
                         </Link>
                     </div>
                     <div className="space-y-3">
-                        {pendingApprovals.map((approval, index) => (
-                            <div key={index} className="group p-4 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-transparent hover:border-primary/30 transition-all duration-300 hover:scale-[1.02] cursor-pointer">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex-1">
-                                        <span className="px-2.5 py-1 rounded-full text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-700 font-semibold">
-                                            {approval.type}
-                                        </span>
-                                        <p className="font-semibold mt-2 text-gray-900 dark:text-gray-100">{approval.student}</p>
-                                        <p className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
-                                            <Clock className="h-3 w-3" />
-                                            Submitted: {new Date(approval.submitted).toLocaleDateString()}
-                                        </p>
+                        {approvalsLoading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : pendingApprovals.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-8">No pending approvals</p>
+                        ) : (
+                            pendingApprovals.map((approval, index) => (
+                                <div key={approval.id || index} className="group p-4 rounded-xl bg-gradient-to-br from-gray-50/80 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/50 hover:from-primary/10 hover:to-primary/5 border border-transparent hover:border-primary/30 transition-all duration-300 hover:scale-[1.02] cursor-pointer">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1">
+                                            <span className="px-2.5 py-1 rounded-full text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-700 font-semibold">
+                                                {approval.type}
+                                            </span>
+                                            <p className="font-semibold mt-2 text-gray-900 dark:text-gray-100">{approval.student}</p>
+                                            <p className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
+                                                <Clock className="h-3 w-3" />
+                                                Submitted: {new Date(approval.submitted).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -313,7 +332,9 @@ export default function WardenDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-blue-900 dark:text-blue-100">Review Pending Approvals</p>
-                                        <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">12 items awaiting review</p>
+                                        <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">
+                                            {stats?.pendingApprovals || 0} items awaiting review
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -341,7 +362,9 @@ export default function WardenDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-orange-900 dark:text-orange-100">View Complaints</p>
-                                        <p className="text-xs text-orange-700 dark:text-orange-400 font-medium">8 active complaints</p>
+                                        <p className="text-xs text-orange-700 dark:text-orange-400 font-medium">
+                                            {stats?.activeComplaints || 0} active complaints
+                                        </p>
                                     </div>
                                 </div>
                             </div>

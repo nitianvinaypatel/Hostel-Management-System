@@ -3,11 +3,54 @@ import { Complaint } from '@/types/complaint';
 import { ApiResponse, PaginatedResponse } from '@/types/common';
 
 interface DashboardData {
-    profile: any;
-    complaints: { total: number; pending: number; resolved: number };
-    payments: { pending: number; total: number };
-    notices: number;
-    roomDetails: any;
+    user?: {
+        name: string;
+        email: string;
+    };
+    stats?: {
+        myRequests?: {
+            total: number;
+            pending: number;
+            approved: number;
+        };
+        complaints?: {
+            total: number;
+            inProgress: number;
+        };
+        pendingPayments?: {
+            total: number;
+            count: number;
+            nextDueDate: string | null;
+        };
+        roomDetails?: {
+            roomNumber: string;
+            hostelName: string;
+            floor: number;
+            blockName?: string;
+        } | null;
+    };
+    latestNotices?: Array<{
+        _id?: string;
+        id?: string;
+        title: string;
+        message?: string;
+        content?: string;
+        type?: string;
+        category?: string;
+        priority?: string;
+        createdAt?: string;
+        date?: string;
+        isNew?: boolean;
+    }>;
+    recentActivity?: Array<{
+        id: string;
+        type: string;
+        title: string;
+        description?: string;
+        time?: string;
+        timestamp?: string;
+        status?: string;
+    }>;
 }
 
 interface CreateComplaintRequest {
@@ -17,10 +60,59 @@ interface CreateComplaintRequest {
     priority?: string;
 }
 
+interface ComplaintsResponse {
+    success: boolean;
+    data: {
+        complaints: Complaint[];
+        pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            pages: number;
+        };
+    };
+}
+
+interface RequestsResponse {
+    success: boolean;
+    data: {
+        requests: any[];
+        pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            pages: number;
+        };
+    };
+}
+
+interface UpdateProfileRequest {
+    name?: string;
+    phone?: string;
+    dateOfBirth?: string;
+    address?: string;
+    emergencyContact?: {
+        name: string;
+        relation: string;
+        phone: string;
+    };
+}
+
+interface ChangePasswordRequest {
+    currentPassword: string;
+    newPassword: string;
+}
+
+interface HostelApplicationRequest {
+    hostelId?: string;
+    hostelName?: string;
+    roomNumber: string;
+}
+
 interface PaymentInitiateRequest {
+    paymentId: string;
     amount: number;
-    paymentType: string;
-    description: string;
+    method: string;
 }
 
 interface PaymentVerifyRequest {
@@ -30,17 +122,18 @@ interface PaymentVerifyRequest {
 }
 
 interface CreateRequestData {
-    requestType: 'room_change' | 'hostel_change' | 'roommate_change';
-    requestedRoomId?: string;
-    requestedHostelId?: string;
-    reason: string;
+    type: 'leave' | 'room_change' | 'hostel_change' | 'other';
+    subject: string;
+    description: string;
+    startDate?: string;
+    endDate?: string;
 }
 
-interface RatingData {
+interface FeedbackData {
     category: string;
+    subject: string;
+    description: string;
     rating: number;
-    feedback: string;
-    isAnonymous: boolean;
 }
 
 interface MessageData {
@@ -62,9 +155,70 @@ export const studentApi = apiSlice.injectEndpoints({
             providesTags: ['Student', 'User'],
         }),
 
+        updateStudentProfile: builder.mutation<ApiResponse<any>, UpdateProfileRequest>({
+            query: (data) => ({
+                url: '/student/profile',
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: ['Student', 'User'],
+        }),
+
+        uploadProfilePicture: builder.mutation<ApiResponse<any>, FormData>({
+            query: (formData) => ({
+                url: '/student/profile/picture',
+                method: 'POST',
+                body: formData,
+            }),
+            invalidatesTags: ['Student', 'User'],
+        }),
+
+        changePassword: builder.mutation<ApiResponse<void>, ChangePasswordRequest>({
+            query: (data) => ({
+                url: '/student/profile/password',
+                method: 'PUT',
+                body: data,
+            }),
+        }),
+
+        // Hostel Application
+        getAvailableHostels: builder.query<ApiResponse<any[]>, void>({
+            query: () => '/student/hostels/available',
+            providesTags: ['Hostel'],
+        }),
+
+        getAvailableRooms: builder.query<ApiResponse<any[]>, string>({
+            query: (hostelId) => `/student/hostels/${hostelId}/rooms`,
+            providesTags: ['Room'],
+        }),
+
+        submitHostelApplication: builder.mutation<ApiResponse<any>, HostelApplicationRequest>({
+            query: (data) => ({
+                url: '/student/hostel-application',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Student'],
+        }),
+
+        getApplicationStatus: builder.query<ApiResponse<any>, void>({
+            query: () => '/student/hostel-application/status',
+            providesTags: ['Student'],
+        }),
+
+        // Room Allotment
+        getRoomAllotment: builder.query<ApiResponse<any>, void>({
+            query: () => '/student/room-allotment',
+            providesTags: ['Room'],
+        }),
+
         // Complaints
-        getStudentComplaints: builder.query<PaginatedResponse<Complaint>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 10 }) => `/student/complaints?page=${page}&limit=${limit}`,
+        getStudentComplaints: builder.query<ComplaintsResponse, { page?: number; limit?: number; status?: string }>({
+            query: ({ page = 1, limit = 10, status }) => {
+                const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+                if (status) params.append('status', status);
+                return `/student/complaints?${params.toString()}`;
+            },
             providesTags: ['Complaint'],
         }),
 
@@ -82,76 +236,14 @@ export const studentApi = apiSlice.injectEndpoints({
             invalidatesTags: ['Complaint', 'Student'],
         }),
 
-        updateComplaint: builder.mutation<ApiResponse<Complaint>, { id: string; data: Partial<CreateComplaintRequest> }>({
-            query: ({ id, data }) => ({
-                url: `/student/complaints/${id}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Complaint', id }, 'Complaint'],
-        }),
-
-        deleteComplaint: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/student/complaints/${id}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['Complaint'],
-        }),
-
-        addComplaintComment: builder.mutation<ApiResponse<any>, { id: string; comment: string }>({
-            query: ({ id, comment }) => ({
-                url: `/student/complaints/${id}/comment`,
-                method: 'POST',
-                body: { comment },
-            }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Complaint', id }],
-        }),
-
-        // Payments
-        getPendingPayments: builder.query<ApiResponse<any[]>, void>({
-            query: () => '/student/payments/pending',
-            providesTags: ['Payment'],
-        }),
-
-        getPaymentHistory: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 10 }) => `/student/payments/history?page=${page}&limit=${limit}`,
-            providesTags: ['Payment'],
-        }),
-
-        getPaymentById: builder.query<ApiResponse<any>, string>({
-            query: (id) => `/student/payments/${id}`,
-            providesTags: (_result, _error, id) => [{ type: 'Payment', id }],
-        }),
-
-        initiatePayment: builder.mutation<ApiResponse<any>, PaymentInitiateRequest>({
-            query: (data) => ({
-                url: '/student/payments/initiate',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Payment'],
-        }),
-
-        verifyPayment: builder.mutation<ApiResponse<any>, PaymentVerifyRequest>({
-            query: (data) => ({
-                url: '/student/payments/verify',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Payment', 'Student'],
-        }),
-
-        downloadReceipt: builder.query<Blob, string>({
-            query: (id) => ({
-                url: `/student/payments/receipt/${id}`,
-                responseHandler: (response) => response.blob(),
-            }),
-        }),
-
-        // Requests (Room/Hostel Change)
-        getStudentRequests: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 10 }) => `/student/requests?page=${page}&limit=${limit}`,
+        // Requests
+        getStudentRequests: builder.query<RequestsResponse, { status?: string; type?: string }>({
+            query: ({ status, type }) => {
+                const params = new URLSearchParams();
+                if (status) params.append('status', status);
+                if (type) params.append('type', type);
+                return `/student/requests?${params.toString()}`;
+            },
             providesTags: ['Request'],
         }),
 
@@ -169,21 +261,36 @@ export const studentApi = apiSlice.injectEndpoints({
             invalidatesTags: ['Request'],
         }),
 
-        updateRequest: builder.mutation<ApiResponse<any>, { id: string; data: Partial<CreateRequestData> }>({
-            query: ({ id, data }) => ({
-                url: `/student/requests/${id}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: (_result, _error, { id }) => [{ type: 'Request', id }, 'Request'],
+        // Payments
+        getPaymentSummary: builder.query<ApiResponse<any>, void>({
+            query: () => '/student/payments/summary',
+            providesTags: ['Payment'],
         }),
 
-        cancelRequest: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/student/requests/${id}`,
-                method: 'DELETE',
+        getPendingPayments: builder.query<ApiResponse<any[]>, void>({
+            query: () => '/student/payments/pending',
+            providesTags: ['Payment'],
+        }),
+
+        getPaymentHistory: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
+            query: ({ page = 1, limit = 10 }) => `/student/payments/history?page=${page}&limit=${limit}`,
+            providesTags: ['Payment'],
+        }),
+
+        initiatePayment: builder.mutation<ApiResponse<any>, PaymentInitiateRequest>({
+            query: (data) => ({
+                url: '/student/payments/initiate',
+                method: 'POST',
+                body: data,
             }),
-            invalidatesTags: ['Request'],
+            invalidatesTags: ['Payment'],
+        }),
+
+        downloadReceipt: builder.query<Blob, string>({
+            query: (transactionId) => ({
+                url: `/student/payments/${transactionId}/receipt`,
+                responseHandler: (response) => response.blob(),
+            }),
         }),
 
         // Mess Menu
@@ -192,103 +299,126 @@ export const studentApi = apiSlice.injectEndpoints({
             providesTags: ['MessMenu'],
         }),
 
-        // Notices
-        getNotices: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 10 }) => `/student/notices?page=${page}&limit=${limit}`,
-            providesTags: ['Notice'],
+        getTodayMessMenu: builder.query<ApiResponse<any>, void>({
+            query: () => '/student/mess-menu/today',
+            providesTags: ['MessMenu'],
         }),
 
-        getNoticeById: builder.query<ApiResponse<any>, string>({
-            query: (id) => `/student/notices/${id}`,
-            providesTags: (_result, _error, id) => [{ type: 'Notice', id }],
-        }),
-
-        markNoticeAsViewed: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/student/notices/${id}/view`,
-                method: 'PUT',
-            }),
-            invalidatesTags: (_result, _error, id) => [{ type: 'Notice', id }],
-        }),
-
-        // Room Details
-        getRoomDetails: builder.query<ApiResponse<any>, void>({
-            query: () => '/student/room-details',
-            providesTags: ['Room'],
-        }),
-
-        // Ratings
-        submitRating: builder.mutation<ApiResponse<any>, RatingData>({
-            query: (data) => ({
-                url: '/student/ratings',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Rating'],
-        }),
-
-        getMyRatings: builder.query<ApiResponse<any[]>, void>({
-            query: () => '/student/ratings',
-            providesTags: ['Rating'],
-        }),
-
-        updateRating: builder.mutation<ApiResponse<any>, { id: string; data: Partial<RatingData> }>({
-            query: ({ id, data }) => ({
-                url: `/student/ratings/${id}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: ['Rating'],
-        }),
-
-        // Messages
-        getConversations: builder.query<ApiResponse<any[]>, void>({
-            query: () => '/student/messages/conversations',
-            providesTags: ['Message'],
-        }),
-
-        getMessages: builder.query<PaginatedResponse<any>, { userId: string; page?: number; limit?: number }>({
-            query: ({ userId, page = 1, limit = 50 }) => `/student/messages/${userId}?page=${page}&limit=${limit}`,
-            providesTags: ['Message'],
-        }),
-
-        sendMessage: builder.mutation<ApiResponse<any>, MessageData>({
-            query: (data) => ({
-                url: '/student/messages',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Message'],
-        }),
-
-        markMessageAsRead: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/student/messages/${id}/read`,
-                method: 'PUT',
-            }),
-            invalidatesTags: ['Message'],
-        }),
-
-        deleteMessage: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/student/messages/${id}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['Message'],
+        getMessInfo: builder.query<ApiResponse<any>, void>({
+            query: () => '/student/mess-menu/info',
+            providesTags: ['MessMenu'],
         }),
 
         // Notifications
-        getNotifications: builder.query<PaginatedResponse<any>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 20 }) => `/student/notifications?page=${page}&limit=${limit}`,
+        getNotifications: builder.query<{ success: boolean; data: any[] | { notifications: any[] } }, { type?: string; isRead?: boolean }>({
+            query: ({ type, isRead }) => {
+                const params = new URLSearchParams();
+                if (type) params.append('type', type);
+                if (isRead !== undefined) params.append('isRead', String(isRead));
+                return `/student/notifications?${params.toString()}`;
+            },
             providesTags: ['Notification'],
         }),
 
         markNotificationAsRead: builder.mutation<ApiResponse<void>, string>({
-            query: (id) => ({
-                url: `/student/notifications/${id}/read`,
+            query: (notificationId) => ({
+                url: `/student/notifications/${notificationId}/read`,
                 method: 'PUT',
             }),
             invalidatesTags: ['Notification'],
+        }),
+
+        markAllNotificationsAsRead: builder.mutation<ApiResponse<void>, void>({
+            query: () => ({
+                url: '/student/notifications/read-all',
+                method: 'PUT',
+            }),
+            invalidatesTags: ['Notification'],
+        }),
+
+        deleteNotification: builder.mutation<ApiResponse<void>, string>({
+            query: (notificationId) => ({
+                url: `/student/notifications/${notificationId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Notification'],
+        }),
+
+        // Events
+        getUpcomingEvents: builder.query<{ success: boolean; data: any[] | { events: any[] } }, { category?: string }>({
+            query: ({ category }) => {
+                const params = new URLSearchParams();
+                if (category) params.append('category', category);
+                return `/student/events/upcoming?${params.toString()}`;
+            },
+            providesTags: ['Event'],
+        }),
+
+        getPastEvents: builder.query<{ success: boolean; data: any[] | { events: any[] } }, void>({
+            query: () => '/student/events/past',
+            providesTags: ['Event'],
+        }),
+
+        getEventById: builder.query<ApiResponse<any>, string>({
+            query: (eventId) => `/student/events/${eventId}`,
+            providesTags: (_result, _error, id) => [{ type: 'Event', id }],
+        }),
+
+        registerForEvent: builder.mutation<ApiResponse<void>, string>({
+            query: (eventId) => ({
+                url: `/student/events/${eventId}/register`,
+                method: 'POST',
+            }),
+            invalidatesTags: ['Event'],
+        }),
+
+        cancelEventRegistration: builder.mutation<ApiResponse<void>, string>({
+            query: (eventId) => ({
+                url: `/student/events/${eventId}/register`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Event'],
+        }),
+
+        getEventCalendar: builder.query<ApiResponse<any>, { month: number; year: number }>({
+            query: ({ month, year }) => `/student/events/calendar?month=${month}&year=${year}`,
+            providesTags: ['Event'],
+        }),
+
+        // Feedback
+        getAllFeedback: builder.query<{ success: boolean; data: { feedbacks: any[]; pagination?: any } }, { status?: string; category?: string }>({
+            query: ({ status, category }) => {
+                const params = new URLSearchParams();
+                if (status) params.append('status', status);
+                if (category) params.append('category', category);
+                return `/student/feedback?${params.toString()}`;
+            },
+            providesTags: ['Feedback'],
+        }),
+
+        submitFeedback: builder.mutation<ApiResponse<any>, FeedbackData>({
+            query: (data) => ({
+                url: '/student/feedback',
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Feedback'],
+        }),
+
+        getFeedbackById: builder.query<ApiResponse<any>, string>({
+            query: (feedbackId) => `/student/feedback/${feedbackId}`,
+            providesTags: (_result, _error, id) => [{ type: 'Feedback', id }],
+        }),
+
+        // Emergency Contacts
+        getEmergencyContacts: builder.query<ApiResponse<any[]>, { category?: string; priority?: string }>({
+            query: ({ category, priority }) => {
+                const params = new URLSearchParams();
+                if (category) params.append('category', category);
+                if (priority) params.append('priority', priority);
+                return `/student/emergency-contacts?${params.toString()}`;
+            },
+            providesTags: ['EmergencyContact'],
         }),
     }),
 });
@@ -296,36 +426,40 @@ export const studentApi = apiSlice.injectEndpoints({
 export const {
     useGetStudentDashboardQuery,
     useGetStudentProfileQuery,
+    useUpdateStudentProfileMutation,
+    useUploadProfilePictureMutation,
+    useChangePasswordMutation,
+    useGetAvailableHostelsQuery,
+    useGetAvailableRoomsQuery,
+    useSubmitHostelApplicationMutation,
+    useGetApplicationStatusQuery,
+    useGetRoomAllotmentQuery,
     useGetStudentComplaintsQuery,
     useGetComplaintByIdQuery,
     useCreateComplaintMutation,
-    useUpdateComplaintMutation,
-    useDeleteComplaintMutation,
-    useAddComplaintCommentMutation,
-    useGetPendingPaymentsQuery,
-    useGetPaymentHistoryQuery,
-    useGetPaymentByIdQuery,
-    useInitiatePaymentMutation,
-    useVerifyPaymentMutation,
-    useLazyDownloadReceiptQuery,
     useGetStudentRequestsQuery,
     useGetRequestByIdQuery,
     useCreateRequestMutation,
-    useUpdateRequestMutation,
-    useCancelRequestMutation,
+    useGetPaymentSummaryQuery,
+    useGetPendingPaymentsQuery,
+    useGetPaymentHistoryQuery,
+    useInitiatePaymentMutation,
+    useLazyDownloadReceiptQuery,
     useGetMessMenuQuery,
-    useGetNoticesQuery,
-    useGetNoticeByIdQuery,
-    useMarkNoticeAsViewedMutation,
-    useGetRoomDetailsQuery,
-    useSubmitRatingMutation,
-    useGetMyRatingsQuery,
-    useUpdateRatingMutation,
-    useGetConversationsQuery,
-    useGetMessagesQuery,
-    useSendMessageMutation,
-    useMarkMessageAsReadMutation,
-    useDeleteMessageMutation,
+    useGetTodayMessMenuQuery,
+    useGetMessInfoQuery,
     useGetNotificationsQuery,
     useMarkNotificationAsReadMutation,
+    useMarkAllNotificationsAsReadMutation,
+    useDeleteNotificationMutation,
+    useGetUpcomingEventsQuery,
+    useGetPastEventsQuery,
+    useGetEventByIdQuery,
+    useRegisterForEventMutation,
+    useCancelEventRegistrationMutation,
+    useGetEventCalendarQuery,
+    useGetAllFeedbackQuery,
+    useSubmitFeedbackMutation,
+    useGetFeedbackByIdQuery,
+    useGetEmergencyContactsQuery,
 } = studentApi;

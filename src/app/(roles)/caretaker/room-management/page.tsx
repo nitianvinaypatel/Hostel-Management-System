@@ -3,134 +3,389 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Plus, Loader2, AlertCircle, Search, ArrowLeft, Building2, DoorOpen, Bed, Users } from "lucide-react"
+import Link from "next/link"
 import {
-    Building2,
-    Bed,
-    DoorOpen,
-    Plus,
-    Search,
-    Filter,
-    Edit,
-    Trash2,
-    Eye,
-    Users,
-    CheckCircle2
-} from "lucide-react"
-
-interface Room {
-    id: string
-    roomNumber: string
-    floor: number
-    type: string
-    capacity: number
-    occupied: number
-    status: 'available' | 'occupied' | 'full'
-    amenities: string[]
-}
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import {
+    useGetCaretakerRoomsQuery,
+    useCreateRoomMutation,
+    useUpdateRoomMutation,
+    useDeleteRoomMutation,
+    useGetRoomStatsQuery
+} from '@/store/api/caretakerApi'
+import { createColumns, Room } from "./columns"
+import { DataTable } from "./data-table"
+import { toast } from "sonner"
 
 export default function RoomManagement() {
-    const [searchQuery, setSearchQuery] = useState("")
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [editDialogOpen, setEditDialogOpen] = useState(false)
+    const [viewDialogOpen, setViewDialogOpen] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+    const [globalFilter, setGlobalFilter] = useState("")
 
-    const rooms: Room[] = [
-        {
-            id: "1",
-            roomNumber: "101",
-            floor: 1,
-            type: "Double",
-            capacity: 2,
-            occupied: 2,
-            status: "full",
-            amenities: ["AC", "Attached Bathroom"]
-        },
-        {
-            id: "2",
-            roomNumber: "102",
-            floor: 1,
-            type: "Triple",
-            capacity: 3,
-            occupied: 2,
-            status: "occupied",
-            amenities: ["AC", "Balcony"]
-        },
-        {
-            id: "3",
-            roomNumber: "103",
-            floor: 1,
-            type: "Single",
-            capacity: 1,
-            occupied: 0,
-            status: "available",
-            amenities: ["AC", "Attached Bathroom", "Study Table"]
-        },
-        {
-            id: "4",
-            roomNumber: "201",
-            floor: 2,
-            type: "Double",
-            capacity: 2,
-            occupied: 1,
-            status: "occupied",
-            amenities: ["Attached Bathroom"]
-        },
-        {
-            id: "5",
-            roomNumber: "202",
-            floor: 2,
-            type: "Quad",
-            capacity: 4,
-            occupied: 4,
-            status: "full",
-            amenities: ["AC", "Balcony", "Study Table"]
-        },
-    ]
+    const [formData, setFormData] = useState({
+        roomNumber: "",
+        floor: 1,
+        type: "double" as "single" | "double" | "triple" | "quad",
+        capacity: 2,
+        amenities: [] as string[],
+    })
 
-    const stats = {
-        totalRooms: 150,
-        occupiedRooms: 120,
-        availableRooms: 30,
-        occupancyRate: 80
+    const [editFormData, setEditFormData] = useState({
+        roomNumber: "",
+        floor: 1,
+        type: "double" as "single" | "double" | "triple" | "quad",
+        capacity: 2,
+        amenities: [] as string[],
+        maintenanceStatus: ""
+    })
+
+    const [amenityInput, setAmenityInput] = useState("")
+    const [editAmenityInput, setEditAmenityInput] = useState("")
+
+    // Redux API hooks
+    const { data: response, isLoading, error, refetch } = useGetCaretakerRoomsQuery({
+        page: 1,
+        limit: 100 // Fetch all 100 rooms
+    })
+
+    const { data: statsResponse } = useGetRoomStatsQuery()
+
+    const [createRoom, { isLoading: isCreating }] = useCreateRoomMutation()
+    const [updateRoom, { isLoading: isUpdating }] = useUpdateRoomMutation()
+    const [deleteRoom, { isLoading: isDeleting }] = useDeleteRoomMutation()
+
+    // Extract rooms from the nested response structure
+    // API returns: { success: true, data: { rooms: [...], pagination: {...} } }
+    const rooms: Room[] = (response?.data as any)?.rooms || []
+    const pagination = (response?.data as any)?.pagination
+
+    // Calculate stats from rooms data if stats API is not available
+    const calculatedStats = {
+        totalRooms: pagination?.total || rooms.length,
+        availableRooms: rooms.filter(r => r.status === 'available').length,
+        occupiedRooms: rooms.filter(r => r.status === 'occupied' || r.status === 'full').length,
+        occupancyRate: rooms.length > 0
+            ? Math.round((rooms.filter(r => r.status === 'occupied' || r.status === 'full').length / rooms.length) * 100)
+            : 0
     }
 
-    const filteredRooms = rooms.filter(room =>
-        room.roomNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        room.type.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    const stats = statsResponse?.data || calculatedStats
+    console.log('API Response:', response)
+    console.log('Rooms data:', rooms)
+    console.log('Rooms count:', rooms.length)
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'available':
-                return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-            case 'occupied':
-                return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-            case 'full':
-                return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-            default:
-                return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+    const handleAddAmenity = () => {
+        if (amenityInput.trim() && !formData.amenities.includes(amenityInput.trim())) {
+            setFormData({
+                ...formData,
+                amenities: [...formData.amenities, amenityInput.trim()]
+            })
+            setAmenityInput("")
         }
+    }
+
+    const handleRemoveAmenity = (amenity: string) => {
+        setFormData({
+            ...formData,
+            amenities: formData.amenities.filter(a => a !== amenity)
+        })
+    }
+
+    const handleAddEditAmenity = () => {
+        if (editAmenityInput.trim() && !editFormData.amenities.includes(editAmenityInput.trim())) {
+            setEditFormData({
+                ...editFormData,
+                amenities: [...editFormData.amenities, editAmenityInput.trim()]
+            })
+            setEditAmenityInput("")
+        }
+    }
+
+    const handleRemoveEditAmenity = (amenity: string) => {
+        setEditFormData({
+            ...editFormData,
+            amenities: editFormData.amenities.filter(a => a !== amenity)
+        })
+    }
+
+    const handleAddRoom = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        try {
+            await createRoom(formData).unwrap()
+            toast.success('Room created successfully!')
+            setDialogOpen(false)
+            setFormData({
+                roomNumber: "",
+                floor: 1,
+                type: "double",
+                capacity: 2,
+                amenities: [],
+            })
+        } catch (err: any) {
+            toast.error(err?.data?.message || 'Failed to create room')
+        }
+    }
+
+    const handleViewClick = (room: Room) => {
+        setSelectedRoom(room)
+        setViewDialogOpen(true)
+    }
+
+    const handleEditClick = (room: Room) => {
+        setSelectedRoom(room)
+        setEditFormData({
+            roomNumber: room.roomNumber,
+            floor: room.floor,
+            type: room.type,
+            capacity: room.capacity,
+            amenities: [...room.amenities],
+            maintenanceStatus: room.maintenanceStatus || ""
+        })
+        setEditDialogOpen(true)
+    }
+
+    const handleEditRoom = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!selectedRoom) return
+
+        try {
+            await updateRoom({
+                id: selectedRoom._id || selectedRoom.id || '',
+                data: editFormData
+            }).unwrap()
+            toast.success('Room updated successfully!')
+            setEditDialogOpen(false)
+            setSelectedRoom(null)
+        } catch (err: any) {
+            toast.error(err?.data?.message || 'Failed to update room')
+        }
+    }
+
+    const handleDeleteClick = (room: Room) => {
+        setSelectedRoom(room)
+        setDeleteDialogOpen(true)
+    }
+
+    const handleDeleteRoom = async () => {
+        if (!selectedRoom) return
+
+        try {
+            await deleteRoom(selectedRoom._id || selectedRoom.id || '').unwrap()
+            toast.success('Room deleted successfully!')
+            setDeleteDialogOpen(false)
+            setSelectedRoom(null)
+        } catch (err: any) {
+            toast.error(err?.data?.message || 'Failed to delete room')
+        }
+    }
+
+    const columns = createColumns({
+        onView: handleViewClick,
+        onEdit: handleEditClick,
+        onDelete: handleDeleteClick
+    })
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-96 space-y-4">
+                <AlertCircle className="h-12 w-12 text-destructive" />
+                <p className="text-lg text-muted-foreground">Failed to load rooms</p>
+                <Button onClick={() => refetch()}>Retry</Button>
+            </div>
+        )
     }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Header Banner */}
+            {/* Header */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-teal-500/10 dark:from-blue-500/20 dark:via-cyan-500/20 dark:to-teal-500/20 backdrop-blur-xl border border-white/20 dark:border-white/10 p-8 shadow-xl">
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-teal-400/30 to-green-400/30 rounded-full blur-3xl animate-pulse" />
-                <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/50">
-                            <Building2 className="h-7 w-7 text-white" />
+                <div className="relative">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Link href="/caretaker/dashboard">
+                                <Button variant="outline" size="icon" className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                                    <ArrowLeft className="h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <div className="space-y-2">
+                                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                                    Room Management
+                                </h1>
+                                <p className="text-muted-foreground text-lg">
+                                    Manage hostel rooms ({rooms.length} total)
+                                </p>
+                            </div>
                         </div>
-                        <div className="space-y-1">
-                            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
-                                Room Management 🏠
-                            </h1>
-                            <p className="text-muted-foreground text-lg">Manage hostel room capacity and allocations</p>
+                        <div className="flex items-center gap-3">
+                            {/* Search Bar */}
+                            <div className="relative w-64">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black dark:text-white" />
+                                <Input
+                                    placeholder="Search rooms..."
+                                    value={globalFilter}
+                                    onChange={(e) => setGlobalFilter(e.target.value)}
+                                    className="pl-10 bg-white/80 dark:bg-gray-800/80 border-gray-300/50 dark:border-gray-700/50 placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                                />
+                            </div>
+                            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Add Room
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[500px]">
+                                    <DialogHeader>
+                                        <DialogTitle>Add New Room</DialogTitle>
+                                        <DialogDescription>
+                                            Create a new room. Fill in all required fields.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={handleAddRoom}>
+                                        <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="roomNumber">Room Number *</Label>
+                                                <Input
+                                                    id="roomNumber"
+                                                    value={formData.roomNumber}
+                                                    onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
+                                                    placeholder="101"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="floor">Floor *</Label>
+                                                <Input
+                                                    id="floor"
+                                                    type="number"
+                                                    min="1"
+                                                    value={formData.floor}
+                                                    onChange={(e) => setFormData({ ...formData, floor: parseInt(e.target.value) })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="type">Room Type *</Label>
+                                                <select
+                                                    id="type"
+                                                    value={formData.type}
+                                                    onChange={(e) => {
+                                                        const type = e.target.value as "single" | "double" | "triple" | "quad"
+                                                        const capacityMap = { single: 1, double: 2, triple: 3, quad: 4 }
+                                                        setFormData({ ...formData, type, capacity: capacityMap[type] })
+                                                    }}
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                                    required
+                                                >
+                                                    <option value="single">Single</option>
+                                                    <option value="double">Double</option>
+                                                    <option value="triple">Triple</option>
+                                                    <option value="quad">Quad</option>
+                                                </select>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="capacity">Capacity *</Label>
+                                                <Input
+                                                    id="capacity"
+                                                    type="number"
+                                                    min="1"
+                                                    value={formData.capacity}
+                                                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label>Amenities</Label>
+                                                <div className="flex gap-2">
+                                                    <Input
+                                                        value={amenityInput}
+                                                        onChange={(e) => setAmenityInput(e.target.value)}
+                                                        placeholder="Add amenity"
+                                                        onKeyPress={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                e.preventDefault()
+                                                                handleAddAmenity()
+                                                            }
+                                                        }}
+                                                    />
+                                                    <Button type="button" onClick={handleAddAmenity} variant="outline">
+                                                        Add
+                                                    </Button>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    {formData.amenities.map((amenity, idx) => (
+                                                        <span
+                                                            key={idx}
+                                                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                                                        >
+                                                            {amenity}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveAmenity(amenity)}
+                                                                className="hover:text-red-600"
+                                                            >
+                                                                ×
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <DialogFooter>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setDialogOpen(false)}
+                                                disabled={isCreating}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={isCreating}
+                                                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                                            >
+                                                {isCreating ? (
+                                                    <>
+                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                        Creating...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        Create Room
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     </div>
-                    <Button className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Add Room
-                    </Button>
                 </div>
             </div>
 
@@ -182,135 +437,249 @@ export default function RoomManagement() {
                 </div>
             </div>
 
-            {/* Search and Filter */}
-            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-4 shadow-lg">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search by room number or type..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9"
-                        />
-                    </div>
-                    <Button variant="outline" className="w-full md:w-auto">
-                        <Filter className="h-4 w-4 mr-2" />
-                        Filter
-                    </Button>
-                </div>
-            </div>
+            {/* Data Table */}
+            <DataTable
+                columns={columns}
+                data={rooms}
+                globalFilter={globalFilter}
+                onGlobalFilterChange={setGlobalFilter}
+            />
 
-            {/* Rooms Table */}
-            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl shadow-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/50 dark:border-gray-700/50">
-                            <tr>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Room
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Floor
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Type
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Capacity
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Amenities
-                                </th>
-                                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
-                            {filteredRooms.map((room) => (
-                                <tr key={room.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md">
-                                                <DoorOpen className="h-5 w-5 text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                                                    Room {room.roomNumber}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {room.occupied}/{room.capacity} occupied
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="text-sm text-gray-900 dark:text-white">Floor {room.floor}</span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="text-sm text-gray-900 dark:text-white">{room.type}</span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-2">
-                                            <Users className="h-4 w-4 text-muted-foreground" />
-                                            <span className="text-sm text-gray-900 dark:text-white">{room.capacity}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(room.status)}`}>
-                                            {room.status === 'available' && <CheckCircle2 className="h-3 w-3" />}
-                                            {room.status.charAt(0).toUpperCase() + room.status.slice(1)}
+            {/* View Room Dialog */}
+            <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Room Details</DialogTitle>
+                        <DialogDescription>
+                            View complete room information
+                        </DialogDescription>
+                    </DialogHeader>
+                    {selectedRoom && (
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-muted-foreground">Room Number</Label>
+                                    <p className="text-lg font-semibold">{selectedRoom.roomNumber}</p>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Floor</Label>
+                                    <p className="text-lg font-semibold">Floor {selectedRoom.floor}</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-muted-foreground">Type</Label>
+                                    <p className="text-lg font-semibold capitalize">{selectedRoom.type}</p>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Capacity</Label>
+                                    <p className="text-lg font-semibold">{selectedRoom.capacity} persons</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-muted-foreground">Current Occupancy</Label>
+                                    <p className="text-lg font-semibold">{selectedRoom.currentOccupancy ?? selectedRoom.occupied ?? 0} / {selectedRoom.capacity}</p>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Status</Label>
+                                    <p className="text-lg font-semibold capitalize">{selectedRoom.status}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <Label className="text-muted-foreground">Amenities</Label>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {selectedRoom.amenities.map((amenity, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="inline-flex px-2 py-1 rounded text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                                        >
+                                            {amenity}
                                         </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-wrap gap-1">
-                                            {room.amenities.slice(0, 2).map((amenity, idx) => (
-                                                <span key={idx} className="inline-flex px-2 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                                                    {amenity}
-                                                </span>
-                                            ))}
-                                            {room.amenities.length > 2 && (
-                                                <span className="inline-flex px-2 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                                                    +{room.amenities.length - 2}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                    ))}
+                                </div>
+                            </div>
+                            {selectedRoom.maintenanceStatus && (
+                                <div>
+                                    <Label className="text-muted-foreground">Maintenance Status</Label>
+                                    <p className="text-sm mt-1">{selectedRoom.maintenanceStatus}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-            {filteredRooms.length === 0 && (
-                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl p-12 shadow-lg text-center">
-                    <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">No rooms found</h3>
-                    <p className="text-muted-foreground mb-4">Try adjusting your search or add a new room</p>
-                    <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Room
-                    </Button>
-                </div>
-            )}
+            {/* Edit Room Dialog */}
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Edit Room</DialogTitle>
+                        <DialogDescription>
+                            Update room information
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleEditRoom}>
+                        <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-roomNumber">Room Number *</Label>
+                                <Input
+                                    id="edit-roomNumber"
+                                    value={editFormData.roomNumber}
+                                    onChange={(e) => setEditFormData({ ...editFormData, roomNumber: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-floor">Floor *</Label>
+                                <Input
+                                    id="edit-floor"
+                                    type="number"
+                                    min="1"
+                                    value={editFormData.floor}
+                                    onChange={(e) => setEditFormData({ ...editFormData, floor: parseInt(e.target.value) })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-type">Room Type *</Label>
+                                <select
+                                    id="edit-type"
+                                    value={editFormData.type}
+                                    onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value as any })}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    required
+                                >
+                                    <option value="single">Single</option>
+                                    <option value="double">Double</option>
+                                    <option value="triple">Triple</option>
+                                    <option value="quad">Quad</option>
+                                </select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-capacity">Capacity *</Label>
+                                <Input
+                                    id="edit-capacity"
+                                    type="number"
+                                    min="1"
+                                    value={editFormData.capacity}
+                                    onChange={(e) => setEditFormData({ ...editFormData, capacity: parseInt(e.target.value) })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-maintenanceStatus">Maintenance Status</Label>
+                                <Input
+                                    id="edit-maintenanceStatus"
+                                    value={editFormData.maintenanceStatus}
+                                    onChange={(e) => setEditFormData({ ...editFormData, maintenanceStatus: e.target.value })}
+                                    placeholder="Optional maintenance notes"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Amenities</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={editAmenityInput}
+                                        onChange={(e) => setEditAmenityInput(e.target.value)}
+                                        placeholder="Add amenity"
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault()
+                                                handleAddEditAmenity()
+                                            }
+                                        }}
+                                    />
+                                    <Button type="button" onClick={handleAddEditAmenity} variant="outline">
+                                        Add
+                                    </Button>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {editFormData.amenities.map((amenity, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                                        >
+                                            {amenity}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveEditAmenity(amenity)}
+                                                className="hover:text-red-600"
+                                            >
+                                                ×
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setEditDialogOpen(false)}
+                                disabled={isUpdating}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={isUpdating}
+                                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                            >
+                                {isUpdating ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    'Update Room'
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Delete Room</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete Room {selectedRoom?.roomNumber}? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setDeleteDialogOpen(false)}
+                            disabled={isDeleting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleDeleteRoom}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                'Delete Room'
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

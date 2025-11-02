@@ -45,7 +45,7 @@ export default function WardenComplaintsReport() {
                         </Link>
                         <div>
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-rose-600 dark:from-red-400 dark:to-rose-400 bg-clip-text text-transparent mb-2">
-                                Complaints Report 📋
+                                Complaints Report
                             </h1>
                             <p className="text-muted-foreground text-lg">Summary of complaints and resolution status</p>
                         </div>

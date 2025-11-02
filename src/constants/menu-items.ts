@@ -92,19 +92,39 @@ export const studentMenuItems = [
         icon: "ClipboardList",
     },
     {
+        title: "Feedback & Suggestions",
+        url: "/student/feedback",
+        icon: "ThumbsUp",
+    },
+    {
+        title: "Events & Activities",
+        url: "/student/events",
+        icon: "PartyPopper",
+    },
+    {
         title: "Mess Menu",
         url: "/student/mess-menu",
         icon: "Utensils",
     },
     {
-        title: "Hostel Notices",
-        url: "/student/notices",
-        icon: "Bell",
-    },
-    {
         title: "Payments",
         url: "/student/payments",
         icon: "CreditCard",
+    },
+    {
+        title: "Notifications",
+        url: "/student/notifications",
+        icon: "Bell",
+    },
+    {
+        title: "Emergency Contacts",
+        url: "/student/emergency-contacts",
+        icon: "Phone",
+    },
+    {
+        title: "Profile & Settings",
+        url: "/student/profile",
+        icon: "User",
     },
 ]
 

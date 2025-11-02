@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { FileText, Download, Eye, BarChart3, Users, DollarSign, AlertCircle } from "lucide-react"
+import { FileText, Download, Eye, BarChart3, Users, DollarSign, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 export default function WardenReports() {
@@ -83,10 +83,19 @@ export default function WardenReports() {
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-indigo-400/30 to-purple-400/30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-pink-400/30 to-indigo-400/30 rounded-full blur-3xl animate-pulse" />
                 <div className="relative">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-2">
-                        Reports 📊
-                    </h1>
-                    <p className="text-muted-foreground text-lg">Generate and view hostel reports</p>
+                    <div className="flex items-center gap-4">
+                        <Link href="/warden/dashboard">
+                            <Button variant="outline" size="icon" className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <div className="space-y-2">
+                            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                                Reports 📊
+                            </h1>
+                            <p className="text-muted-foreground text-lg">Generate and view hostel reports</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 

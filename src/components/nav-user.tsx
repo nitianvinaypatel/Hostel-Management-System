@@ -101,7 +101,7 @@ export function NavUser() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                        side={isMobile ? "bottom" : "right"}
+                        side="top"
                         align="end"
                         sideOffset={4}
                     >
@@ -122,26 +122,15 @@ export function NavUser() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {/* <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <Sparkles />
-                                Upgrade to Pro
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator /> */}
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/${user.role}/profile`)}>
                                 <BadgeCheck />
-                                Account
+                                Profile & Settings
                             </DropdownMenuItem>
-                            {/* <DropdownMenuItem>
-                                <CreditCard />
-                                Billing
-                            </DropdownMenuItem> */}
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/${user.role}/notifications`)}>
                                 <Bell />
                                 Notifications
                             </DropdownMenuItem>
-                        </DropdownMenuGroup>
+                        </DropdownMenuGroup> */}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
                             <LogOut />

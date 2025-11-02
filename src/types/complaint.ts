@@ -6,13 +6,16 @@ export enum ComplaintStatus {
 }
 
 export interface Complaint {
+    _id?: string
     id: string
     title: string
     description: string
-    status: ComplaintStatus
-    studentId: string
-    hostelId: string
-    roomNumber: string
+    category: string
+    status: ComplaintStatus | string
+    studentId?: string
+    hostelId?: string
+    roomNumber?: string
+    date?: string
     createdAt: string
     updatedAt: string
 }
